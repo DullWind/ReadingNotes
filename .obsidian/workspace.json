@@ -1,0 +1,162 @@
+{
+  "main": {
+    "id": "0c804a295059b175",
+    "type": "split",
+    "children": [
+      {
+        "id": "827af4e1d4ed2fcf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5e646d6fbe4fc452",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "gamePatterns/设计模式.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "9c5d26fcd64ad140",
+    "type": "split",
+    "children": [
+      {
+        "id": "437106212ab9f841",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e03cf158f9580ebf",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "7f16421a9bb1afd9",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "0847d258034c6dc7",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "cec2b16e2b1b1955",
+    "type": "split",
+    "children": [
+      {
+        "id": "76d422b49a46b777",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9d0cfa215caf69ac",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "gamePatterns/设计模式.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "c8bca2a1ba9af4a3",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "gamePatterns/设计模式.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "f396ebeecfd67437",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "f0c64a8cd843799b",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "gamePatterns/设计模式.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false
+    }
+  },
+  "active": "5e646d6fbe4fc452",
+  "lastOpenFiles": [
+    "token.txt",
+    "新建 文本文档.txt",
+    "README.md",
+    "gamePatterns/设计模式.md",
+    "gamePatterns/sequencing patterns.md",
+    "gamePatterns/DOTS.md",
+    "gamePatterns/Behavioral Patterns.md",
+    "gamePatterns",
+    "create a link.md",
+    "Welcome.md"
+  ]
+}
