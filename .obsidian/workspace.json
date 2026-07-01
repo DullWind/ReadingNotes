@@ -8,18 +8,43 @@
         "type": "tabs",
         "children": [
           {
-            "id": "5e646d6fbe4fc452",
+            "id": "5571260a470b3d47",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "gamePatterns/设计模式.md",
+                "file": "3C.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "246f0a179fae1e90",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Game/Idea2.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "c082686cfd81c08a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Game/Idea2.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -85,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "gamePatterns/设计模式.md",
+                "file": "Game/Idea2.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "gamePatterns/设计模式.md",
+                "file": "Game/Idea2.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "gamePatterns/设计模式.md"
+                "file": "Game/Idea2.md"
               }
             }
           }
@@ -146,17 +171,53 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "5e646d6fbe4fc452",
+  "active": "c082686cfd81c08a",
   "lastOpenFiles": [
-    "README.md",
-    "token.txt",
-    "新建 文本文档.txt",
+    "Game/idea3.md",
+    "Game/Idea1.md",
+    "Game/Idea2.md",
+    "3C.md",
+    "记录.md",
+    "技术探索/GPU动画最小实现学习笔记.md",
+    "项目优化技术分析.md",
+    "protobuf_工作流程与编解码原理.md",
+    "Framework/Entities.md",
     "gamePatterns/设计模式.md",
+    "gamePatterns/Behavioral Patterns.md",
     "gamePatterns/sequencing patterns.md",
     "gamePatterns/DOTS.md",
-    "gamePatterns/Behavioral Patterns.md",
-    "gamePatterns",
-    "create a link.md",
-    "Welcome.md"
+    "Framework/Create And Del Entity.md",
+    "Framework/Addressable.md",
+    "Framework/Skill.md",
+    "3C 1.md",
+    "Pic/Pasted image 20260115164649.png",
+    "Pic/Pasted image 20260115164815.png",
+    "Pic/Pasted image 20260115164826.png",
+    "Pic/Pasted image 20260115164849.png",
+    "Pic/Pasted image 20260205181757.png",
+    "Framework/ETC.md",
+    "技术探索/多语言切换.md",
+    "技术探索/比宝展示.md",
+    "GM.md",
+    "lua_hardcoded_report.md",
+    "todo.md",
+    "lua_hardcoded_report 1.md",
+    "未命名 3.md",
+    "未命名 2.md",
+    "Task",
+    "Pic",
+    "Game",
+    "技术探索",
+    "Pic/Pasted image 20260204145614.png",
+    "CursorDoc/images/alliance/10_kick_confirm.png",
+    "CursorDoc/images/alliance/09_rank_adjust.png",
+    "CursorDoc/images/alliance/08_permission.png",
+    "CursorDoc/images/alliance/07_member_list.png",
+    "CursorDoc/images/alliance",
+    "CursorDoc/images",
+    "CursorDoc",
+    "CameraManager_Flowchart.pdf",
+    "Framework",
+    "token.txt"
   ]
 }
