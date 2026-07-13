@@ -1,5 +1,5 @@
 ---
-type: Note
+type: ai
 ---
 # agent\_learn
 

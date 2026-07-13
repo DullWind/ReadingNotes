@@ -1,3 +1,6 @@
+---
+type: readingNote
+---
 # Protobuf 工作流程与编解码原理（beagle 项目）
 
 > 本笔记整理自网络协议链路的分析。\

@@ -1,0 +1,142 @@
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+
+personality = "pragmatic"
+
+
+
+notify = [ "C:\\Users\\wuyuzhen\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\1b23c930bdf84ed6\\bin\\node_modules\\@oai\\sky\\bin\\windows\\codex-computer-use.exe", "turn-ended" ]
+
+[marketplaces.openai-bundled]
+last_updated = "2026-07-08T03:54:59Z"
+source_type = "local"
+source = '\\?\C:\Users\wuyuzhen\.codex\.tmp\bundled-marketplaces\openai-bundled'
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-07-02T08:50:46Z"
+source_type = "local"
+source = '\\?\C:\Users\wuyuzhen\.cache\codex-runtimes\codex-primary-runtime\plugins\openai-primary-runtime'
+
+[marketplaces.claude-mem-local]
+last_updated = "2026-07-08T03:54:57Z"
+last_revision = "312d640b0188753acd92a1a82d95a84d5c7c43db"
+source_type = "git"
+source = "https://github.com/thedotmack/claude-mem.git"
+ref = "main"
+sparse_paths = [".agents/plugins", "plugin"]
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."superpowers@openai-curated"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[plugins."claude-mem@claude-mem-local"]
+enabled = true
+
+[windows]
+sandbox = "elevated"
+
+[projects.'g:\beagle']
+trust_level = "trusted"
+
+[projects.'c:\rok\data\ls']
+trust_level = "trusted"
+
+[projects.'g:\learn_agent\01']
+trust_level = "trusted"
+
+[projects.'g:\readingnotes']
+trust_level = "trusted"
+
+[desktop]
+selected-avatar-id = "custom:roxy-pixel"
+conversationDetailMode = "STEPS_COMMANDS"
+keepRemoteControlAwakeWhilePluggedIn = true
+followUpQueueMode = "queue"
+
+[desktop.open-in-target-preferences]
+global = "cursor"
+
+[desktop.open-in-target-preferences.perPath]
+'G:\beagle' = "cursor"
+
+[features]
+js_repl = false
+memories = false
+chronicle = false
+
+[mcp_servers.node_repl]
+command = 'C:\Users\wuyuzhen\AppData\Local\OpenAI\Codex\runtimes\cua_node\1b23c930bdf84ed6\bin\node_repl.exe'
+startup_timeout_sec = 120.0
+
+[mcp_servers.node_repl.env]
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.623.141536"
+CODEX_CLI_PATH = 'C:\Users\wuyuzhen\AppData\Local\OpenAI\Codex\bin\ea1c60319a1dcb19\codex.exe'
+CODEX_HOME = 'C:\Users\wuyuzhen\.codex'
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = 'C:\Users\wuyuzhen\AppData\Local\OpenAI\Codex\runtimes\cua_node\1b23c930bdf84ed6\bin\node_modules'
+NODE_REPL_NODE_PATH = 'C:\Users\wuyuzhen\AppData\Local\OpenAI\Codex\runtimes\cua_node\1b23c930bdf84ed6\bin\node.exe'
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "566be6ef352eb3de899adc56a9cd7b5e46c8f65b00e56b5630dd7a580e10cbea,97669f77b3ca7114a2df05d55646416ea34b28100c07213ef9f643803449ef2f"
+NODE_REPL_TRUSTED_CODE_PATHS = 'C:\Users\wuyuzhen\.codex'
+SKY_CUA_NATIVE_PIPE = "1"
+SKY_CUA_NATIVE_PIPE_DIRECTORY = '\\.\pipe\codex-computer-use-8ebc5df5-2682-42cc-943e-dc5819d55fc3'
+
+[memories]
+generate_memories = false
+use_memories = false
+disable_on_external_context = true
+
+[hooks.state]
+
+[hooks.state.'C:\Users\wuyuzhen\.codex\hooks.json:pre_tool_use:0:0']
+trusted_hash = "sha256:8203a5816e5c1bdbc29ced32832d7727a68815c96c55fa4ecbfe22b4f91cfbc3"
+
+[hooks.state.'C:\Users\wuyuzhen\.codex\hooks.json:post_tool_use:0:0']
+trusted_hash = "sha256:02ae3e862726020104833b10fb9a7e037084bb1f85ec0b80fd81864583113ff6"
+
+[hooks.state.'C:\Users\wuyuzhen\.codex\hooks.json:pre_compact:0:0']
+trusted_hash = "sha256:59dc1ec8d053c97f6dbe78025bd8d9df0778ef676d9ccaccc5568e5001f419dc"
+
+[hooks.state.'C:\Users\wuyuzhen\.codex\hooks.json:session_start:0:0']
+trusted_hash = "sha256:43cea727fec2dad7e3fa9ba31ea4e44d9b057109118557aee876d2d4ec59c25c"
+
+[hooks.state.'C:\Users\wuyuzhen\.codex\hooks.json:user_prompt_submit:0:0']
+trusted_hash = "sha256:c7c9e22be12e1fd479e0cd635498f2b98d5eefb0bb447a557f83c4e2c2ffda1b"
+
+[hooks.state.'C:\Users\wuyuzhen\.codex\hooks.json:stop:0:0']
+trusted_hash = "sha256:037ec75795ddff884ad4b9509537767e5b53d25bc981381e1df625ce4c1d4f6d"
+
+[hooks.state."claude-mem@claude-mem-local:hooks/codex-hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:b7d0441dba8de78581a91c462715642d92911faac50067dedeb318d459c61992"
+
+[hooks.state."claude-mem@claude-mem-local:hooks/codex-hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:1aed0ef6cc14fc2d0cb2c3291ee1f753bd17e084b72a8447880d94fded50e3b7"
+
+[hooks.state."claude-mem@claude-mem-local:hooks/codex-hooks.json:session_start:0:0"]
+trusted_hash = "sha256:a49e35e6770e8b5b251c7e2ca94f13d495891cb3b59edaaa813c34381e69a318"
+
+[hooks.state."claude-mem@claude-mem-local:hooks/codex-hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:32a3cb5e63d1b872e9ddb07c785626ad6384761d2a43e99caa87170fcc4d57d7"
+
+[hooks.state."claude-mem@claude-mem-local:hooks/codex-hooks.json:stop:0:0"]
+trusted_hash = "sha256:e4d0f215ca42d40be9ecc0b5658f2bc3e31f6b78ccb7c6a6208302b991a570e8"
