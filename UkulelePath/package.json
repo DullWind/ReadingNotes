@@ -20,7 +20,10 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "android:check": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/android/check-env.ps1",
+    "build:apk": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/android/build-apk.ps1",
+    "build:apk:refresh": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/android/build-apk.ps1 -RefreshNative"
   },
   "private": true
 }

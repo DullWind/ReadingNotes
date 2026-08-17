@@ -6,17 +6,22 @@ import {
   Alert, Pressable, SafeAreaView, ScrollView, StyleProp, StyleSheet,
   Text, View, ViewStyle,
 } from 'react-native';
+import { FingeringGuide } from './src/components/FingeringGuide';
+import { Metronome } from './src/components/Metronome';
+import { TabScore } from './src/components/TabScore';
+import { foundationLessons, getFoundationExercise } from './src/data/foundations';
 import { song } from './src/data/song';
 import {
-  createDailyPlan, currentSection, overallMastery, sectionMastery, suggestedTempo,
+  createDailyPlan, currentFoundationLesson, currentSection, foundationMastery,
+  overallMastery, sectionMastery, sectionReadyForNext, suggestedTempo,
 } from './src/services/planner';
 import { defaultProgress, loadProgress, saveProgress } from './src/storage';
 import { cardShadow, colors } from './src/theme';
-import { TabId, UserProgress } from './src/types';
+import { FoundationLesson, TabId, UserProgress } from './src/types';
 
 const tabs: { id: TabId; icon: string; label: string }[] = [
   { id: 'today', icon: '⌂', label: '今日' },
-  { id: 'roadmap', icon: '⌁', label: '路线' },
+  { id: 'roadmap', icon: '⌁', label: '学习' },
   { id: 'practice', icon: '♪', label: '练习' },
   { id: 'library', icon: '▤', label: '曲库' },
 ];
@@ -55,8 +60,8 @@ function Header() {
   return (
     <View style={styles.header}>
       <View>
-        <Text style={styles.brand}>木弦日课</Text>
-        <Text style={styles.headerTitle}>向《幻化成风》前进</Text>
+        <Text style={styles.brand}>木弦成风</Text>
+        <Text style={styles.headerTitle}>从第一拍开始学尤克里里</Text>
       </View>
       <View style={styles.headerBadge}><Text style={styles.headerBadgeText}>Android 首版</Text></View>
     </View>
@@ -112,7 +117,10 @@ function Today({ progress, setProgress, goPractice }: {
   progress: UserProgress; setProgress: ProgressSetter; goPractice: () => void;
 }) {
   const plan = createDailyPlan(progress);
-  const mastery = overallMastery(progress.results);
+  const lesson = currentFoundationLesson(progress.completedFoundationLessonIds);
+  const mastery = lesson
+    ? foundationMastery(progress.completedFoundationLessonIds)
+    : overallMastery(progress.results);
   const section = currentSection(progress.results);
   const total = plan.reduce((sum, item) => sum + item.minutes, 0);
   const done = progress.completedTaskIds.length;
@@ -131,9 +139,11 @@ function Today({ progress, setProgress, goPractice }: {
       <View style={styles.hero}>
         <View style={styles.heroCircleOne} /><View style={styles.heroCircleTwo} />
         <Text style={styles.heroKicker}>阶段目标</Text>
-        <Text style={styles.heroTitle}>完整流畅地弹出{String.fromCharCode(10)}《幻化成风》</Text>
+        <Text style={styles.heroTitle}>{lesson
+          ? '从节拍、识谱和双手动作开始'
+          : '完整流畅地弹出' + String.fromCharCode(10) + '《幻化成风》'}</Text>
         <View style={styles.heroProgress}>
-          <View style={styles.flex}><Progress value={mastery} light /><Text style={styles.heroNote}>综合掌握度 · {mastery}%</Text></View>
+          <View style={styles.flex}><Progress value={mastery} light /><Text style={styles.heroNote}>{lesson ? '基础课进度' : '歌曲综合掌握度'} · {mastery}%</Text></View>
           <View style={styles.score}><Text style={styles.scoreText}>{mastery}</Text></View>
         </View>
       </View>
@@ -144,9 +154,12 @@ function Today({ progress, setProgress, goPractice }: {
       </View>
 
       <Card style={styles.focusCard}>
-        <View style={styles.titleRow}><Pill label={'当前章节 · ' + section.order + '/6'} green /><Text style={styles.tempoSmall}>{suggestedTempo(section, progress.results)} BPM</Text></View>
-        <Text style={styles.focusTitle}>{section.title}</Text>
-        <Text style={styles.paragraph}>{section.focus}</Text>
+        <View style={styles.titleRow}>
+          <Pill label={lesson ? '基础课 · ' + lesson.order + '/' + foundationLessons.length : '歌曲章节 · ' + section.order + '/6'} green />
+          <Text style={styles.tempoSmall}>{lesson ? '60' : suggestedTempo(section, progress.results)} BPM</Text>
+        </View>
+        <Text style={styles.focusTitle}>{lesson ? lesson.title : section.title}</Text>
+        <Text style={styles.paragraph}>{lesson ? lesson.goal : section.focus}</Text>
       </Card>
 
       {plan.map((task, index) => {
@@ -173,24 +186,53 @@ function Today({ progress, setProgress, goPractice }: {
 }
 
 function Roadmap({ progress }: { progress: UserProgress }) {
+  const activeLesson = currentFoundationLesson(progress.completedFoundationLessonIds);
   const active = currentSection(progress.results);
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <PageTitle title="学习路线" subtitle="每一站都为完整演奏服务。掌握度达到 78% 后进入下一段。" />
+      <PageTitle title="学习路线" subtitle="先建立音乐与尤克里里基础，再进入《幻化成风》的分段练习。" />
+      <View style={styles.routeHeading}>
+        <Text style={styles.eyebrow}>第一部分</Text><Text style={styles.sectionTitle}>音乐与尤克里里基础</Text>
+      </View>
+      {foundationLessons.map((lesson, index) => {
+        const completed = progress.completedFoundationLessonIds.includes(lesson.id);
+        const current = activeLesson?.id === lesson.id;
+        const locked = Boolean(activeLesson && lesson.order > activeLesson.order);
+        return (
+          <View key={lesson.id} style={styles.roadRow}>
+            <View style={styles.rail}>
+              <View style={[styles.dot, current && styles.dotActive, completed && styles.dotDone]}>
+                <Text style={styles.dotText}>{completed ? '✓' : lesson.order}</Text>
+              </View>
+              {index < foundationLessons.length - 1 && <View style={styles.line} />}
+            </View>
+            <Card style={[styles.roadCard, current && styles.roadActive, locked && styles.disabled]}>
+              <View style={styles.titleRow}><Text style={styles.roadTitle}>{lesson.title}</Text><Pill label={completed ? '已完成' : current ? '正在学习' : '稍后解锁'} green={current || completed} /></View>
+              <Text style={styles.paragraph}>{lesson.summary}</Text>
+              <Text style={styles.reason}>过关标准：{lesson.goal}</Text>
+            </Card>
+          </View>
+        );
+      })}
+
+      <View style={styles.routeHeading}>
+        <Text style={styles.eyebrow}>第二部分</Text><Text style={styles.sectionTitle}>《幻化成风》专项</Text>
+      </View>
       {song.sections.map((section, index) => {
         const mastery = sectionMastery(section, progress.results);
-        const current = section.id === active.id;
-        const locked = section.order > active.order + 1;
+        const completed = sectionReadyForNext(section, progress.results);
+        const current = !activeLesson && section.id === active.id;
+        const locked = Boolean(activeLesson) || section.order > active.order + 1;
         return (
           <View key={section.id} style={styles.roadRow}>
             <View style={styles.rail}>
-              <View style={[styles.dot, current && styles.dotActive, mastery >= 78 && styles.dotDone]}>
-                <Text style={styles.dotText}>{mastery >= 78 ? '✓' : section.order}</Text>
+              <View style={[styles.dot, current && styles.dotActive, completed && styles.dotDone]}>
+                <Text style={styles.dotText}>{completed ? '✓' : section.order}</Text>
               </View>
               {index < song.sections.length - 1 && <View style={styles.line} />}
             </View>
             <Card style={[styles.roadCard, current && styles.roadActive, locked && styles.disabled]}>
-              <View style={styles.titleRow}><Text style={styles.roadTitle}>{section.title}</Text><Pill label={locked ? '稍后解锁' : current ? '正在学习' : mastery + '%'} green={current} /></View>
+              <View style={styles.titleRow}><Text style={styles.roadTitle}>{section.title}</Text><Pill label={activeLesson ? '完成基础后解锁' : completed ? '已巩固' : locked ? '稍后解锁' : current ? '正在学习' : mastery + '%'} green={current || completed} /></View>
               <Text style={styles.paragraph}>{section.measureRange} · {section.subtitle}</Text>
               <View style={styles.tags}>{section.skills.map((skill) => <Pill key={skill} label={skill} />)}</View>
               <Progress value={mastery} />
@@ -203,6 +245,135 @@ function Roadmap({ progress }: { progress: UserProgress }) {
 }
 
 function Practice({ progress, setProgress }: { progress: UserProgress; setProgress: ProgressSetter }) {
+  const lesson = currentFoundationLesson(progress.completedFoundationLessonIds);
+  return lesson
+    ? <FoundationPractice lesson={lesson} progress={progress} setProgress={setProgress} />
+    : <SongPractice progress={progress} setProgress={setProgress} />;
+}
+
+function FoundationPractice({ lesson, progress, setProgress }: {
+  lesson: FoundationLesson;
+  progress: UserProgress;
+  setProgress: ProgressSetter;
+}) {
+  const exercise = getFoundationExercise(lesson.exerciseId);
+  const [tempo, setTempo] = useState(exercise.tempo);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [playingDemo, setPlayingDemo] = useState(false);
+  const [checked, setChecked] = useState<number[]>([]);
+  const activeEvent = exercise.events[activeIndex];
+
+  useEffect(() => {
+    setTempo(exercise.tempo);
+    setActiveIndex(0);
+    setPlayingDemo(false);
+    setChecked([]);
+  }, [exercise.id]);
+
+  useEffect(() => {
+    if (!playingDemo) return undefined;
+    const wait = activeEvent.durationBeats * 60000 / tempo;
+    const timer = setTimeout(() => {
+      if (activeIndex >= exercise.events.length - 1) {
+        setPlayingDemo(false);
+      } else {
+        setActiveIndex((value) => value + 1);
+      }
+    }, wait);
+    return () => clearTimeout(timer);
+  }, [activeEvent.durationBeats, activeIndex, exercise.events.length, playingDemo, tempo]);
+
+  function toggleDemo() {
+    if (playingDemo) {
+      setPlayingDemo(false);
+      return;
+    }
+    if (activeIndex >= exercise.events.length - 1) setActiveIndex(0);
+    setPlayingDemo(true);
+  }
+
+  function toggleCheck(index: number) {
+    setChecked((current) => current.includes(index)
+      ? current.filter((value) => value !== index)
+      : current.concat(index));
+  }
+
+  function completeLesson() {
+    setProgress((current) => ({
+      ...current,
+      completedFoundationLessonIds: current.completedFoundationLessonIds.includes(lesson.id)
+        ? current.completedFoundationLessonIds
+        : current.completedFoundationLessonIds.concat(lesson.id),
+      completedTaskIds: [],
+    }));
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <PageTitle title="基础练习" subtitle={'第 ' + lesson.order + ' 课 · 先理解，再看谱，最后跟着节拍练。'} />
+      <Card style={styles.practiceHero}>
+        <Pill label={'基础课 ' + lesson.order + '/' + foundationLessons.length} green />
+        <Text style={styles.practiceTitle}>{lesson.title}</Text>
+        <Text style={styles.paragraph}>{lesson.concept}</Text>
+        <View style={styles.goalBox}><Text style={styles.reason}>本课目标</Text><Text style={styles.goalText}>{lesson.goal}</Text></View>
+      </Card>
+
+      <Card><Metronome tempo={tempo} onTempoChange={setTempo} /></Card>
+
+      <Card>
+        <View style={styles.titleRow}>
+          <View style={styles.flex}><Text style={styles.eyebrow}>练习曲</Text><Text style={styles.exerciseTitle}>{exercise.title}</Text></View>
+          <Pill label={tempo + ' BPM'} green />
+        </View>
+        <Text style={styles.paragraph}>{exercise.subtitle}</Text>
+        <TabScore exercise={exercise} activeIndex={activeIndex} onSelect={(index) => {
+          setPlayingDemo(false);
+          setActiveIndex(index);
+        }} />
+      </Card>
+
+      <Card>
+        <FingeringGuide event={activeEvent} />
+        <View style={styles.demoControls}>
+          <Pressable
+            onPress={() => { setPlayingDemo(false); setActiveIndex((value) => Math.max(0, value - 1)); }}
+            style={[styles.demoButton, activeIndex === 0 && styles.disabled]}
+            disabled={activeIndex === 0}
+          ><Text style={styles.demoButtonText}>上一个</Text></Pressable>
+          <Pressable onPress={toggleDemo} style={styles.demoPlay}>
+            <Text style={styles.demoPlayText}>{playingDemo ? '暂停动画' : '播放动画'}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => { setPlayingDemo(false); setActiveIndex((value) => Math.min(exercise.events.length - 1, value + 1)); }}
+            style={[styles.demoButton, activeIndex === exercise.events.length - 1 && styles.disabled]}
+            disabled={activeIndex === exercise.events.length - 1}
+          ><Text style={styles.demoButtonText}>下一个</Text></Pressable>
+        </View>
+      </Card>
+
+      <Card>
+        <Text style={styles.question}>确认后再进入下一课</Text>
+        <Text style={styles.paragraph}>这些是自我检查，不是考试。出现疼痛时应立即停止。</Text>
+        {lesson.checks.map((check, index) => {
+          const done = checked.includes(index);
+          return (
+            <Pressable key={check} onPress={() => toggleCheck(index)} style={styles.checkRow}>
+              <View style={[styles.checkCircle, done && styles.checkCircleDone]}><Text style={styles.checkText}>{done ? '✓' : ''}</Text></View>
+              <Text style={styles.packageText}>{check}</Text>
+            </Pressable>
+          );
+        })}
+        <Button
+          disabled={checked.length < lesson.checks.length}
+          label={checked.length < lesson.checks.length ? '完成全部自检后继续' : '完成本课，进入下一课'}
+          onPress={completeLesson}
+        />
+      </Card>
+    </ScrollView>
+  );
+}
+
+function SongPractice({ progress, setProgress }: { progress: UserProgress; setProgress: ProgressSetter }) {
   const section = currentSection(progress.results);
   const [tempo, setTempo] = useState(suggestedTempo(section, progress.results));
   const player = useAudioPlayer(null, { updateInterval: 250 });
@@ -216,6 +387,10 @@ function Practice({ progress, setProgress }: { progress: UserProgress; setProgre
     const playbackRate = Math.max(0.5, Math.min(1, tempo / song.targetTempo));
     player.setPlaybackRate(playbackRate, 'high');
   }, [player, tempo]);
+
+  useEffect(() => {
+    if (tempo < 90 && status.playing) player.pause();
+  }, [player, status.playing, tempo]);
 
   function record(rating: 1 | 2 | 3) {
     const now = new Date().toISOString();
@@ -236,10 +411,11 @@ function Practice({ progress, setProgress }: { progress: UserProgress; setProgre
 
   const duration = status.duration || 0;
   const position = status.currentTime || 0;
+  const canUseOriginal = Boolean(progress.audioUri) && tempo >= 90;
 
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <PageTitle title="专注练习" subtitle="先求清楚和连贯，再追求速度。" />
+      <PageTitle title="《幻化成风》练习" subtitle="低速阶段使用节拍器和谱面；达到 90 BPM 后再跟随降速原曲。" />
       <Card style={styles.practiceHero}>
         <Pill label={'第 ' + section.order + ' 阶段'} green />
         <Text style={styles.practiceTitle}>{section.title}</Text>
@@ -258,9 +434,15 @@ function Practice({ progress, setProgress }: { progress: UserProgress; setProgre
         </View>
         <Progress value={duration ? position / duration * 100 : 0} />
         <View style={styles.audioButtons}>
-          <Button disabled={!progress.audioUri} label={status.playing ? '暂停' : '播放跟练'} onPress={() => status.playing ? player.pause() : player.play()} />
+          <Button disabled={!canUseOriginal} label={tempo < 90 ? '90 BPM 后开放原曲跟练' : status.playing ? '暂停' : '播放跟练'} onPress={() => status.playing ? player.pause() : player.play()} />
           <Pressable disabled={!progress.audioUri} onPress={() => player.seekTo(0)}><Text style={[styles.link, !progress.audioUri && styles.disabled]}>回到开头</Text></Pressable>
         </View>
+      </Card>
+
+      <Card>
+        <Text style={styles.eyebrow}>目标曲谱</Text>
+        <Text style={styles.importTitle}>《幻化成风》的逐音符 TAB 仍待录入</Text>
+        <Text style={styles.importHelp}>基础练习曲已经使用结构化谱面；目标曲必须完成音符、弦号、品位和节奏校对后才会开放，避免教错。</Text>
       </Card>
 
       <View><Text style={styles.question}>这一次弹得怎么样？</Text><Text style={styles.paragraph}>你的选择会直接调整下一次计划。</Text></View>
@@ -307,9 +489,13 @@ function Library({ progress, setProgress }: { progress: UserProgress; setProgres
       </Card>
       <Card>
         <View style={styles.titleRow}><Text style={styles.eyebrow}>歌曲学习包</Text><Pill label="结构已就绪" green /></View>
-        <PackageItem done label="6 个渐进学习阶段" />
+        <PackageItem done label="6 节音乐与尤克里里基础课" />
+        <PackageItem done label="基础练习曲的结构化 TAB" />
+        <PackageItem done label="C、Am、F、G7 按弦动画" />
+        <PackageItem done label="有声、视觉与振动节拍器" />
+        <PackageItem done label="《幻化成风》6 个渐进学习阶段" />
         <PackageItem done label="动态速度与薄弱项复习" />
-        <PackageItem label="PDF 小节与指法数据待录入" />
+        <PackageItem label="《幻化成风》PDF 逐音符与指法数据待录入" />
         <PackageItem label="音频段落时间点待标注" />
       </Card>
     </ScrollView>
@@ -359,6 +545,7 @@ const styles = StyleSheet.create({
   focusCard: { backgroundColor: '#EEF0E6', borderColor: '#D4DDCB' },
   focusTitle: { color: colors.ink, fontSize: 20, fontWeight: '900', marginTop: 12 },
   paragraph: { color: colors.inkMuted, fontSize: 14, lineHeight: 21, marginTop: 5 },
+  routeHeading: { marginTop: 6, marginBottom: 4 },
   tempoSmall: { color: colors.leaf, fontWeight: '900' },
   pill: { alignSelf: 'flex-start', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 99, backgroundColor: colors.surfaceMuted },
   pillGreen: { backgroundColor: colors.leafSoft },
@@ -394,6 +581,18 @@ const styles = StyleSheet.create({
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginVertical: 12 },
   practiceHero: { backgroundColor: '#EEF0E6', borderColor: '#D4DDCB' },
   practiceTitle: { color: colors.ink, fontSize: 26, fontWeight: '900', marginTop: 12 },
+  goalBox: { backgroundColor: colors.surface, borderRadius: 14, padding: 13, marginTop: 12 },
+  goalText: { color: colors.ink, fontSize: 14, lineHeight: 21, fontWeight: '800', marginTop: 4 },
+  exerciseTitle: { color: colors.ink, fontSize: 20, fontWeight: '900', marginTop: 3 },
+  demoControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 10 },
+  demoButton: { flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: 12, backgroundColor: colors.surfaceMuted },
+  demoButtonText: { color: colors.woodDark, fontWeight: '900', fontSize: 12 },
+  demoPlay: { flex: 1.2, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.leaf },
+  demoPlayText: { color: colors.white, fontWeight: '900', fontSize: 12 },
+  checkRow: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 10 },
+  checkCircle: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
+  checkCircleDone: { backgroundColor: colors.leaf, borderColor: colors.leaf },
+  checkText: { color: colors.white, fontSize: 13, fontWeight: '900' },
   tempoControl: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 18, marginTop: 22 },
   roundButton: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
   roundText: { color: colors.woodDark, fontSize: 25, fontWeight: '800' },

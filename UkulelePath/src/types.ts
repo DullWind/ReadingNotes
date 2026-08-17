@@ -1,5 +1,49 @@
 export type TabId = 'today' | 'roadmap' | 'practice' | 'library';
 
+export type UkuleleString = 1 | 2 | 3 | 4;
+
+export interface FrettedNote {
+  string: UkuleleString;
+  fret: number;
+  finger?: 1 | 2 | 3 | 4;
+  name?: string;
+}
+
+export interface ChordShape {
+  id: string;
+  name: string;
+  notes: FrettedNote[];
+  tip: string;
+}
+
+export interface ExerciseEvent {
+  id: string;
+  durationBeats: number;
+  notes: FrettedNote[];
+  chordId?: string;
+  cue: string;
+}
+
+export interface PracticeExercise {
+  id: string;
+  title: string;
+  subtitle: string;
+  tempo: number;
+  meter: '4/4';
+  events: ExerciseEvent[];
+}
+
+export interface FoundationLesson {
+  id: string;
+  order: number;
+  title: string;
+  summary: string;
+  concept: string;
+  goal: string;
+  exerciseId: string;
+  checks: string[];
+}
+
 export type SkillTag =
   | '识谱'
   | '右手拨弦'
@@ -34,6 +78,7 @@ export interface PracticeResult {
 export interface UserProgress {
   planDate: string;
   completedTaskIds: string[];
+  completedFoundationLessonIds: string[];
   results: PracticeResult[];
   audioUri: string | null;
   audioName: string | null;
@@ -48,5 +93,7 @@ export interface PlanTask {
   reason: string;
   minutes: number;
   sectionId?: string;
+  lessonId?: string;
+  exerciseId?: string;
   tempo?: number;
 }

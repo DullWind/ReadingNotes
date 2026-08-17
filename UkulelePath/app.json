@@ -1,15 +1,17 @@
 {
   "expo": {
-    "name": "木弦日课",
+    "name": "木弦成风",
     "slug": "ukulele-path",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "description": "围绕《幻化成风》设计的尤克里里指弹学习助手",
+    "description": "从音乐基础、练习曲到《幻化成风》的尤克里里学习助手",
     "android": {
       "package": "com.readingnotes.ukulelepath",
-      "permissions": [],
+      "permissions": [
+        "android.permission.VIBRATE"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E9D7B8",
         "foregroundImage": "./assets/android-icon-foreground.png",

@@ -1,4 +1,5 @@
 import { song } from '../data/song';
+import { foundationLessons } from '../data/foundations';
 import { PlanTask, PracticeResult, SongSection, UserProgress } from '../types';
 
 export function dateKey(date = new Date()) {
@@ -22,8 +23,15 @@ export function sectionMastery(section: SongSection, results: PracticeResult[]) 
   return Math.round((rating * 0.65 + tempo * 0.35) * 100);
 }
 
+export function sectionReadyForNext(section: SongSection, results: PracticeResult[]) {
+  const successful = sectionResults(results, section.id)
+    .filter((result) => result.rating === 3 && result.tempo >= section.targetTempo);
+  const practiceDays = new Set(successful.map((result) => result.completedAt.slice(0, 10)));
+  return successful.length >= 3 && practiceDays.size >= 2;
+}
+
 export function currentSection(results: PracticeResult[]) {
-  return song.sections.find((section) => sectionMastery(section, results) < 78)
+  return song.sections.find((section) => !sectionReadyForNext(section, results))
     || song.sections[song.sections.length - 1];
 }
 
@@ -35,7 +43,43 @@ export function suggestedTempo(section: SongSection, results: PracticeResult[]) 
   return latest.tempo;
 }
 
+export function currentFoundationLesson(completedLessonIds: string[]) {
+  return foundationLessons.find((lesson) => !completedLessonIds.includes(lesson.id));
+}
+
+export function foundationMastery(completedLessonIds: string[]) {
+  const completed = foundationLessons.filter((lesson) => completedLessonIds.includes(lesson.id)).length;
+  return Math.round(completed / foundationLessons.length * 100);
+}
+
 export function createDailyPlan(progress: UserProgress): PlanTask[] {
+  const lesson = currentFoundationLesson(progress.completedFoundationLessonIds);
+  if (lesson) {
+    return [
+      {
+        id: 'tune-and-relax', kind: 'warmup', title: '调音与放松检查',
+        detail: '确认 G · C · E · A，肩膀放松，按弦手腕不疼痛',
+        reason: '正确声音和放松动作比练习速度更重要', minutes: 2,
+      },
+      {
+        id: 'concept-' + lesson.id, kind: 'technique', title: '先理解：' + lesson.title,
+        detail: lesson.concept, reason: '先听懂和看懂，再拿琴重复动作',
+        minutes: 4, lessonId: lesson.id, exerciseId: lesson.exerciseId, tempo: 60,
+      },
+      {
+        id: 'exercise-' + lesson.id, kind: 'section', title: '基础练习：' + lesson.summary,
+        detail: lesson.goal, reason: '这是进入《幻化成风》前的第 ' + lesson.order + ' 项基础能力',
+        minutes: Math.max(6, progress.dailyMinutes - 8),
+        lessonId: lesson.id, exerciseId: lesson.exerciseId, tempo: 60,
+      },
+      {
+        id: 'listen-and-note', kind: 'review', title: '回听与放松收尾',
+        detail: '说出今天最稳定的一次，以及还会卡住的一个动作',
+        reason: '学会判断自己的声音，比单纯增加重复次数更有效', minutes: 2,
+      },
+    ];
+  }
+
   const section = currentSection(progress.results);
   const tempo = suggestedTempo(section, progress.results);
   const latest = sectionResults(progress.results, section.id)[0];

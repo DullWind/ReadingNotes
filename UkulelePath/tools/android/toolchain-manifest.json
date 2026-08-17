@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows-x64",
+  "installedLocations": {
+    "javaHome": "%LOCALAPPDATA%\\Programs\\UkulelePathBuildTools\\jdk\\jdk-17.0.20+8",
+    "androidSdk": "%LOCALAPPDATA%\\Android\\Sdk",
+    "offlineArchives": "%LOCALAPPDATA%\\Programs\\UkulelePathBuildTools\\archives"
+  },
+  "components": {
+    "node": "24.18.0",
+    "java": "Eclipse Temurin 17.0.20+8",
+    "platformTools": "37.0.1",
+    "androidPlatform": "36 revision 2",
+    "buildTools": ["35.0.0", "36.0.0"],
+    "ndk": "27.1.12297006",
+    "cmake": ["3.22.1", "3.30.5"]
+  },
+  "offlineArchives": [
+    {
+      "file": "OpenJDK17U-jdk_x64_windows_hotspot_17.0.20_8.zip",
+      "algorithm": "SHA256",
+      "hash": "418497BE5CF585BDD2203D6486A565D66D3F5E992D5630D45104CB873FAB8122"
+    },
+    {
+      "file": "commandlinetools-win-15859902_latest.zip",
+      "algorithm": "SHA1",
+      "hash": "B9862337A13E2809A5159DC3A08D058091BD59F6"
+    }
+  ]
+}

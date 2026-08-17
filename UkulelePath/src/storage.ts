@@ -7,6 +7,7 @@ const KEY = 'woodstring-progress-v1';
 export const defaultProgress: UserProgress = {
   planDate: dateKey(),
   completedTaskIds: [],
+  completedFoundationLessonIds: [],
   results: [],
   audioUri: null,
   audioName: null,
@@ -18,6 +19,9 @@ export async function loadProgress(): Promise<UserProgress> {
     const raw = await Storage.getItem(KEY);
     if (!raw) return defaultProgress;
     const saved = { ...defaultProgress, ...JSON.parse(raw) } as UserProgress;
+    saved.completedFoundationLessonIds = Array.isArray(saved.completedFoundationLessonIds)
+      ? saved.completedFoundationLessonIds
+      : [];
     return saved.planDate === dateKey()
       ? saved
       : { ...saved, planDate: dateKey(), completedTaskIds: [] };
