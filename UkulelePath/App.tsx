@@ -213,8 +213,8 @@ function Practice({ progress, setProgress }: { progress: UserProgress; setProgre
   }, [player, progress.audioUri]);
 
   useEffect(() => {
-    player.playbackRate = Math.max(0.5, Math.min(1, tempo / song.targetTempo));
-    player.shouldCorrectPitch = true;
+    const playbackRate = Math.max(0.5, Math.min(1, tempo / song.targetTempo));
+    player.setPlaybackRate(playbackRate, 'high');
   }, [player, tempo]);
 
   function record(rating: 1 | 2 | 3) {

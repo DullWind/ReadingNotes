@@ -1,8 +1,8 @@
-# Android 构建错误日志
+# Android 开发错误日志
 
 > 项目：木弦日课（UkulelePath）  
 > 首次记录：2026-08-17  
-> 用途：保存可复现、可全文搜索的 Android 构建故障。查询时可搜索错误编号、错误原文、组件名或标签。
+> 用途：保存可复现、可全文搜索的 Android 构建与运行故障。查询时可搜索错误编号、错误原文、组件名或标签。
 
 ## 查询方式
 
@@ -11,6 +11,7 @@
     rg -n "JAVA_HOME|jbr" docs/BUILD_TROUBLESHOOTING.md
     rg -n "AND-BUILD-006|Platform 36|ext19" docs/BUILD_TROUBLESHOOTING.md
     rg -n "timeout|0 字节|下载慢" docs/BUILD_TROUBLESHOOTING.md
+    rg -n "AND-RUNTIME|playbackRate|练习页" docs/BUILD_TROUBLESHOOTING.md
 
 ## 快速索引
 
@@ -28,6 +29,8 @@
 | AND-BUILD-010 | NODE_ENV、Debug、Metro、Release | 已解决 |
 | AND-BUILD-011 | Debug Keystore、v2 签名 | 测试可用 |
 | AND-BUILD-012 | deprecated、Gradle 10 | 待升级处理 |
+| AND-BUILD-013 | SDK location not found、local.properties、sdk.dir | 已解决 |
+| AND-RUNTIME-001 | 练习页、playbackRate、only a getter | 代码已修复，待真机回归 |
 
 ## AND-BUILD-001：JAVA_HOME 指向失效的 JRE
 
@@ -152,6 +155,29 @@
 - 来源：Expo SDK 57、React Native 0.86.2 和对应 Gradle 插件。
 - 当前影响：不阻止 Gradle 9.3.1 构建，Debug/Release 均成功。
 - 后续：升级 Expo/React Native 时复查，不要脱离 Expo 兼容矩阵单独强升组件。
+
+## AND-BUILD-013：项目找不到 Android SDK
+
+- 日期：2026-08-17
+- 标签：SDK location not found、ANDROID_HOME、local.properties、sdk.dir
+- 错误原文：SDK location not found. Define a valid SDK location with an ANDROID_HOME environment variable or by setting the sdk.dir path in your project's local properties file.
+- 环境：Windows、Android Studio SDK 位于 C:\Users\wuyuzhen\AppData\Local\Android\Sdk。
+- 症状：Gradle 在配置 :app 阶段停止，assembleRelease 无法开始编译。
+- 根因：android/local.properties 缺失，当前构建进程也没有可用的 ANDROID_HOME。
+- 解决：创建 android/local.properties，设置 sdk.dir=C:/Users/wuyuzhen/AppData/Local/Android/Sdk。
+- 验证：重新运行 assembleRelease，268 个任务完成，BUILD SUCCESSFUL；Release APK 通过 v2 签名验证。
+- 复发条件：删除或重新生成 android 目录、移动 Android SDK，或换到另一台电脑。
+## AND-RUNTIME-001：进入练习页时写入只读播放速度属性
+
+- 日期：2026-08-17
+- 标签：练习页、expo-audio、playbackRate、shouldCorrectPitch、only a getter
+- 错误原文：Cannot assign to property "playbackRate" which has only a getter.
+- 环境：Expo SDK 57、expo-audio 57.0.3、Android。
+- 症状：点击“练习”页签时立即报错，页面无法正常使用。
+- 根因：代码直接给 player.playbackRate 和 player.shouldCorrectPitch 赋值；当前 expo-audio 原生播放器将其暴露为只读 getter。
+- 解决：改用 player.setPlaybackRate(rate, 'high')，通过公开方法设置播放速度并启用高质量音高校正。
+- 验证：TypeScript 类型检查通过；需要在新 APK 或开发构建中完成真机回归。
+- 复发条件：升级 expo-audio 后应重新核对 AudioPlayer API，不要根据状态对象字段推断播放器属性可写。
 
 ## 已验证产物
 
