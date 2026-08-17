@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>断气 · 最小玩法 Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0e1211;
+      --panel: rgba(23, 29, 27, 0.9);
+      --line: rgba(235, 230, 208, 0.16);
+      --text: #ebe8dc;
+      --muted: #989c92;
+      --player: #54d9c0;
+      --player-soft: rgba(84, 217, 192, 0.16);
+      --enemy: #ff6b62;
+      --enemy-soft: rgba(255, 107, 98, 0.15);
+      --neutral: #bbb7a8;
+      --warning: #f0bd55;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(84, 217, 192, 0.07), transparent 30rem),
+        radial-gradient(circle at 88% 82%, rgba(255, 107, 98, 0.06), transparent 30rem),
+        var(--bg);
+    }
+
+    button { font: inherit; }
+
+    .app {
+      width: min(1160px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .main {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      color: var(--player);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 7px 0 4px;
+      font-family: Georgia, "Noto Serif SC", serif;
+      font-size: clamp(34px, 5vw, 62px);
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .board-wrap {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1 / 0.76;
+      min-height: 440px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0)),
+        #151a18;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+
+    .result {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      background: rgba(7, 10, 9, 0.76);
+      backdrop-filter: blur(8px);
+    }
+
+    .result.visible { display: grid; }
+
+    .result-card {
+      width: min(390px, 100%);
+      padding: 30px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #171d1b;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+    }
+
+    .result-card h2 {
+      margin: 0 0 10px;
+      font: 500 36px/1.1 Georgia, "Noto Serif SC", serif;
+    }
+
+    .result-card p { color: var(--muted); }
+
+    .sidebar {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+    }
+
+    .score {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .score-item {
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .score-item.player { box-shadow: inset 0 0 0 1px var(--player-soft); }
+    .score-item.enemy { box-shadow: inset 0 0 0 1px var(--enemy-soft); }
+
+    .score-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .player .dot { color: var(--player); }
+    .enemy .dot { color: var(--enemy); }
+
+    .score-value {
+      margin-top: 6px;
+      font-size: 27px;
+      font-weight: 750;
+    }
+
+    .score-caption {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .status {
+      min-height: 48px;
+      margin: 0;
+      color: #d7d5ca;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .rules {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .rules li + li { margin-top: 7px; }
+
+    .legend {
+      display: grid;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .legend-mark {
+      width: 28px;
+      height: 2px;
+      flex: 0 0 auto;
+      background: var(--neutral);
+    }
+
+    .legend-mark.cutoff {
+      height: 10px;
+      border: 2px dashed var(--warning);
+      border-radius: 8px;
+      background: transparent;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .btn:hover {
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { border-color: rgba(84, 217, 192, 0.35); color: var(--player); }
+
+    .small-note {
+      margin: 10px 0 0;
+      color: #73786f;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    @media (max-width: 820px) {
+      .app {
+        grid-template-columns: 1fr;
+        padding: 18px;
+      }
+
+      .board-wrap {
+        min-height: 380px;
+      }
+
+      .sidebar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .sidebar .card:first-child,
+      .sidebar .card:last-child { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 560px) {
+      .app { padding: 14px; }
+      .board-wrap { min-height: 350px; aspect-ratio: 1 / 0.94; }
+      .sidebar { grid-template-columns: 1fr; }
+      .sidebar .card { grid-column: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="main">
+      <div class="eyebrow">围棋 × 即时战略 · 原型 02</div>
+      <h1>断气</h1>
+      <p class="subtitle">把固定兵流压向棋块的“气”。同时争夺空交叉点，在援军抵达前完成连接、切断与提子。</p>
+
+      <div class="board-wrap">
+        <canvas id="board" aria-label="断气实时兵流围棋棋盘"></canvas>
+        <div class="result" id="result">
+          <div class="result-card">
+            <h2 id="resultTitle">对局结束</h2>
+            <p id="resultText"></p>
+            <button class="btn primary" id="againBtn" type="button">再来一局</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="card score">
+        <div class="score-item player">
+          <div class="score-label"><span class="dot"></span>青方 · 你</div>
+          <div class="score-value" id="playerScore">0</div>
+          <div class="score-caption" id="playerDetail">地 0 · 提 0</div>
+        </div>
+        <div class="score-item enemy">
+          <div class="score-label"><span class="dot"></span>赤方 · AI</div>
+          <div class="score-value" id="enemyScore">0</div>
+          <div class="score-caption" id="enemyDetail">地 0 · 提 0</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>战场讯息 · <span id="timer">02:00</span></h3>
+        <p class="status" id="status" aria-live="polite">点击任意空交叉点建立兵流前线；最多同时开启三条。</p>
+      </section>
+
+      <section class="card">
+        <h3>最小规则</h3>
+        <ol class="rules">
+          <li>双方各有固定总兵流；前线越多，每条线分到的兵力越少。</li>
+          <li>点击空点开启或关闭前线；远处落子运输更慢。</li>
+          <li>双方兵流在空点实时抵消；优势满一圈才完成落子。</li>
+          <li>已有棋子没有血量；棋块失去最后一口气时整块提走。</li>
+          <li>点击棋子查看整块棋和气；两分钟后按围地与提子结算。</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h3>棋盘标记</h3>
+        <div class="legend">
+          <div class="legend-row"><span class="legend-mark"></span><span>发光线路：持续输送中的兵流</span></div>
+          <div class="legend-row"><span class="legend-mark cutoff"></span><span>黄色圆环：棋块仅剩最后一口气</span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="actions">
+          <button class="btn" id="pauseBtn" type="button">暂停</button>
+          <button class="btn primary" id="resetBtn" type="button">重新开始</button>
+        </div>
+        <p class="small-note">快捷键：空格暂停 · R 重开</p>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const SIZE = 7;
+      const PLAYER = 1;
+      const ENEMY = 2;
+      const NEUTRAL = 0;
+      const MATCH_TIME = 120000;
+      const FLOW_RATE = 6;
+      const BUILD_THRESHOLD = 10;
+      const PACKET_INTERVAL = 170;
+      const BASE_TRAVEL_TIME = 360;
+      const STEP_TRAVEL_TIME = 115;
+      const AI_INTERVAL = 900;
+      const MAX_FRONTS = 3;
+
+      const colors = {
+        0: "#bbb7a8",
+        1: "#54d9c0",
+        2: "#ff6b62"
+      };
+
+      const canvas = document.getElementById("board");
+      const ctx = canvas.getContext("2d");
+      const statusEl = document.getElementById("status");
+      const playerScoreEl = document.getElementById("playerScore");
+      const enemyScoreEl = document.getElementById("enemyScore");
+      const playerDetailEl = document.getElementById("playerDetail");
+      const enemyDetailEl = document.getElementById("enemyDetail");
+      const timerEl = document.getElementById("timer");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const againBtn = document.getElementById("againBtn");
+      const resultEl = document.getElementById("result");
+      const resultTitleEl = document.getElementById("resultTitle");
+      const resultTextEl = document.getElementById("resultText");
+
+      let nodes = [];
+      let packets = [];
+      let pulses = [];
+      let selected = null;
+      let fronts = { 1: [], 2: [] };
+      let prisoners = { 1: 0, 2: 0 };
+      let running = true;
+      let winner = null;
+      let lastFrame = performance.now();
+      let gameTime = 0;
+      let emitClock = { 1: 0, 2: 0 };
+      let aiClock = 0;
+      let messageUntil = 0;
+      let layoutCache = [];
+      let cachedTerritory = { 1: 0, 2: 0 };
+
+      function idAt(row, col) {
+        return row * SIZE + col;
+      }
+
+      function getNeighbors(id) {
+        const row = Math.floor(id / SIZE);
+        const col = id % SIZE;
+        const list = [];
+        if (row > 0) list.push(idAt(row - 1, col));
+        if (row < SIZE - 1) list.push(idAt(row + 1, col));
+        if (col > 0) list.push(idAt(row, col - 1));
+        if (col < SIZE - 1) list.push(idAt(row, col + 1));
+        return list;
+      }
+
+      function areNeighbors(a, b) {
+        return getNeighbors(a).includes(b);
+      }
+
+      function makeNodes() {
+        const result = [];
+        for (let row = 0; row < SIZE; row += 1) {
+          for (let col = 0; col < SIZE; col += 1) {
+            result.push({
+              id: idAt(row, col),
+              row,
+              col,
+              owner: NEUTRAL,
+              pressure: { 1: 0, 2: 0 },
+              koUntil: 0
+            });
+          }
+        }
+
+        result[idAt(3, 1)].owner = PLAYER;
+        result[idAt(3, 5)].owner = ENEMY;
+        return result;
+      }
+
+      function groupAt(state, startId) {
+        const owner = state[startId].owner;
+        if (owner === NEUTRAL) return { owner: NEUTRAL, members: [], liberties: new Set() };
+
+        const seen = new Set();
+        const liberties = new Set();
+        const stack = [startId];
+        while (stack.length) {
+          const currentId = stack.pop();
+          if (seen.has(currentId)) continue;
+          seen.add(currentId);
+          getNeighbors(currentId).forEach((neighborId) => {
+            const neighbor = state[neighborId];
+            if (neighbor.owner === owner && !seen.has(neighborId)) stack.push(neighborId);
+            if (neighbor.owner === NEUTRAL) liberties.add(neighborId);
+          });
+        }
+        return { owner, members: Array.from(seen), liberties };
+      }
+
+      function findGroups(owner, state = nodes) {
+        const visited = new Set();
+        const groups = [];
+        state.forEach((node) => {
+          if (node.owner !== owner || visited.has(node.id)) return;
+          const group = groupAt(state, node.id);
+          group.members.forEach((id) => visited.add(id));
+          groups.push(group);
+        });
+        return groups;
+      }
+
+      function simulateMove(state, targetId, owner) {
+        if (!state[targetId] || state[targetId].owner !== NEUTRAL) {
+          return { legal: false, state, captured: [] };
+        }
+
+        const next = state.map((node) => ({ ...node, pressure: { ...node.pressure } }));
+        next[targetId].owner = owner;
+        const opponent = owner === PLAYER ? ENEMY : PLAYER;
+        const checked = new Set();
+        const captured = [];
+
+        getNeighbors(targetId).forEach((neighborId) => {
+          if (next[neighborId].owner !== opponent || checked.has(neighborId)) return;
+          const group = groupAt(next, neighborId);
+          group.members.forEach((id) => checked.add(id));
+          if (group.liberties.size === 0) {
+            group.members.forEach((id) => {
+              next[id].owner = NEUTRAL;
+              captured.push(id);
+            });
+          }
+        });
+
+        if (groupAt(next, targetId).liberties.size === 0) {
+          return { legal: false, state, captured: [] };
+        }
+        return { legal: true, state: next, captured };
+      }
+
+      function territoryFor(state) {
+        const visited = new Set();
+        const territory = { 1: 0, 2: 0 };
+        state.forEach((node) => {
+          if (node.owner !== NEUTRAL || visited.has(node.id)) return;
+          const stack = [node.id];
+          const cells = [];
+          const borders = new Set();
+          while (stack.length) {
+            const currentId = stack.pop();
+            if (visited.has(currentId)) continue;
+            visited.add(currentId);
+            cells.push(currentId);
+            getNeighbors(currentId).forEach((neighborId) => {
+              const neighbor = state[neighborId];
+              if (neighbor.owner === NEUTRAL && !visited.has(neighborId)) stack.push(neighborId);
+              if (neighbor.owner !== NEUTRAL) borders.add(neighbor.owner);
+            });
+          }
+          if (borders.size === 1) territory[Array.from(borders)[0]] += cells.length;
+        });
+        return territory;
+      }
+
+      function canBuild(targetId, owner) {
+        const target = nodes[targetId];
+        return target.owner === NEUTRAL && target.koUntil <= gameTime && simulateMove(nodes, targetId, owner).legal;
+      }
+
+      function nearestSource(targetId, owner) {
+        let sourceId = null;
+        let distance = Infinity;
+        nodes.forEach((node) => {
+          if (node.owner !== owner) return;
+          const value = Math.abs(node.row - nodes[targetId].row) + Math.abs(node.col - nodes[targetId].col);
+          if (value < distance) {
+            distance = value;
+            sourceId = node.id;
+          }
+        });
+        if (sourceId !== null) return { sourceId, distance };
+        const homeCol = owner === PLAYER ? -1 : SIZE;
+        return { sourceId: null, distance: Math.abs(nodes[targetId].col - homeCol) + 1 };
+      }
+
+      function setStatus(text, duration = 2200) {
+        statusEl.textContent = text;
+        messageUntil = gameTime + duration;
+      }
+
+      function defaultStatus() {
+        if (selected !== null && nodes[selected].owner !== NEUTRAL) {
+          const group = groupAt(nodes, selected);
+          statusEl.textContent = "已查看 " + group.members.length + " 子棋块，共有 " + group.liberties.size + " 口气。";
+          return;
+        }
+        const count = fronts[PLAYER].length;
+        statusEl.textContent = count
+          ? "已开启 " + count + " 条前线，每条获得 " + (FLOW_RATE / count).toFixed(1) + " 兵流/秒。"
+          : "点击任意空交叉点建立兵流前线；最多同时开启三条。";
+      }
+
+      function pruneFronts(owner) {
+        fronts[owner] = fronts[owner]
+          .filter((targetId, index, list) => list.indexOf(targetId) === index && canBuild(targetId, owner))
+          .slice(0, MAX_FRONTS);
+      }
+
+      function toggleFront(targetId) {
+        const current = fronts[PLAYER].indexOf(targetId);
+        if (current >= 0) {
+          fronts[PLAYER].splice(current, 1);
+          setStatus("已撤回这条兵流，兵力重新分配。", 1400);
+          return;
+        }
+        if (!canBuild(targetId, PLAYER)) {
+          setStatus(nodes[targetId].koUntil > gameTime ? "这里刚发生提子，暂时不能落子。" : "这一步会自杀，无法建立阵地。", 1700);
+          return;
+        }
+        if (fronts[PLAYER].length >= MAX_FRONTS) {
+          fronts[PLAYER].shift();
+          setStatus("前线已满：最早命令被撤回。", 1600);
+        } else {
+          setStatus("前线建立；前线越多，单线推进越慢。", 1500);
+        }
+        fronts[PLAYER].push(targetId);
+      }
+
+      function emitPackets(dt) {
+        [PLAYER, ENEMY].forEach((owner) => {
+          emitClock[owner] += dt;
+          pruneFronts(owner);
+          while (emitClock[owner] >= PACKET_INTERVAL) {
+            emitClock[owner] -= PACKET_INTERVAL;
+            const active = fronts[owner];
+            if (!active.length) continue;
+            const amount = FLOW_RATE * (PACKET_INTERVAL / 1000) / active.length;
+            active.forEach((targetId) => {
+              const source = nearestSource(targetId, owner);
+              packets.push({
+                from: source.sourceId,
+                to: targetId,
+                owner,
+                amount,
+                startedAt: gameTime,
+                duration: BASE_TRAVEL_TIME + source.distance * STEP_TRAVEL_TIME
+              });
+            });
+          }
+        });
+      }
+
+      function arrive(packet) {
+        const target = nodes[packet.to];
+        if (target.owner !== NEUTRAL || target.koUntil > gameTime) return;
+        target.pressure[packet.owner] += packet.amount;
+        const clash = Math.min(target.pressure[PLAYER], target.pressure[ENEMY]);
+        target.pressure[PLAYER] -= clash;
+        target.pressure[ENEMY] -= clash;
+        if (target.pressure[packet.owner] >= BUILD_THRESHOLD) commitStone(packet.to, packet.owner);
+      }
+
+      function commitStone(targetId, owner) {
+        const result = simulateMove(nodes, targetId, owner);
+        nodes[targetId].pressure[PLAYER] = 0;
+        nodes[targetId].pressure[ENEMY] = 0;
+        if (!result.legal) {
+          fronts[owner] = fronts[owner].filter((id) => id !== targetId);
+          return;
+        }
+
+        nodes = result.state;
+        result.captured.forEach((id) => {
+          prisoners[owner] += 1;
+          nodes[id].koUntil = gameTime + 2400;
+          nodes[id].pressure[PLAYER] = 0;
+          nodes[id].pressure[ENEMY] = 0;
+          pulses.push({ id, start: gameTime, color: "#f0bd55" });
+        });
+        pulses.push({ id: targetId, start: gameTime, color: colors[owner] });
+        fronts[PLAYER] = fronts[PLAYER].filter((id) => nodes[id].owner === NEUTRAL);
+        fronts[ENEMY] = fronts[ENEMY].filter((id) => nodes[id].owner === NEUTRAL);
+        if (selected !== null && nodes[selected].owner === NEUTRAL) selected = null;
+        pruneFronts(PLAYER);
+        pruneFronts(ENEMY);
+
+        if (result.captured.length) {
+          setStatus((owner === PLAYER ? "你" : "赤方") + "封住最后一口气，提走 " + result.captured.length + " 子。", 2300);
+        } else if (owner === PLAYER) {
+          setStatus("落子完成，棋块与气已经重新计算。", 1200);
+        }
+      }
+
+      function updatePackets() {
+        const remaining = [];
+        packets.forEach((packet) => {
+          if (gameTime - packet.startedAt >= packet.duration) arrive(packet);
+          else remaining.push(packet);
+        });
+        packets = remaining;
+      }
+
+      function decayPressure(dt) {
+        const amount = dt / 1000;
+        nodes.forEach((node) => {
+          if (node.owner !== NEUTRAL) {
+            node.pressure[PLAYER] = 0;
+            node.pressure[ENEMY] = 0;
+            return;
+          }
+          [PLAYER, ENEMY].forEach((owner) => {
+            const active = fronts[owner].includes(node.id) || packets.some((packet) => packet.owner === owner && packet.to === node.id);
+            if (!active) node.pressure[owner] = Math.max(0, node.pressure[owner] - amount);
+          });
+        });
+      }
+
+      function scoreCandidate(targetId, owner) {
+        const result = simulateMove(nodes, targetId, owner);
+        if (!result.legal || nodes[targetId].koUntil > gameTime) return -Infinity;
+        const opponent = owner === PLAYER ? ENEMY : PLAYER;
+        let score = Math.random() * 7 + result.captured.length * 180;
+        const seenOwn = new Set();
+        const seenEnemy = new Set();
+        let ownGroups = 0;
+        let enemyGroups = 0;
+
+        getNeighbors(targetId).forEach((id) => {
+          if (nodes[id].owner === owner && !seenOwn.has(id)) {
+            const group = groupAt(nodes, id);
+            group.members.forEach((member) => seenOwn.add(member));
+            ownGroups += 1;
+            if (group.liberties.size === 1) score += 125;
+            else if (group.liberties.size === 2) score += 24;
+          }
+          if (nodes[id].owner === opponent && !seenEnemy.has(id)) {
+            const group = groupAt(nodes, id);
+            group.members.forEach((member) => seenEnemy.add(member));
+            enemyGroups += 1;
+            if (group.liberties.size === 1) score += 165;
+            else if (group.liberties.size === 2) score += 42;
+          }
+        });
+
+        if (ownGroups >= 2) score += 46;
+        if (enemyGroups >= 2) score += 34;
+        const center = (SIZE - 1) / 2;
+        score += 10 - Math.abs(nodes[targetId].row - center) - Math.abs(nodes[targetId].col - center);
+        score -= nearestSource(targetId, owner).distance * 1.7;
+        score += nodes[targetId].pressure[opponent] * 2.2;
+        return score;
+      }
+
+      function runAI() {
+        const choices = nodes
+          .filter((node) => node.owner === NEUTRAL)
+          .map((node) => ({ id: node.id, score: scoreCandidate(node.id, ENEMY) }))
+          .filter((choice) => Number.isFinite(choice.score))
+          .sort((a, b) => b.score - a.score);
+        fronts[ENEMY] = choices.slice(0, 2).map((choice) => choice.id);
+      }
+
+      function finishGame() {
+        if (winner) return;
+        winner = "finished";
+        running = false;
+        selected = null;
+        const territory = territoryFor(nodes);
+        const playerTotal = territory[PLAYER] + prisoners[PLAYER];
+        const enemyTotal = territory[ENEMY] + prisoners[ENEMY];
+        cachedTerritory = territory;
+        resultTitleEl.textContent = playerTotal === enemyTotal ? "平局" : playerTotal > enemyTotal ? "青方胜" : "赤方胜";
+        resultTextEl.textContent =
+          "青方 " + playerTotal + " 分（地 " + territory[PLAYER] + "，提 " + prisoners[PLAYER] +
+          "） · 赤方 " + enemyTotal + " 分（地 " + territory[ENEMY] + "，提 " + prisoners[ENEMY] + "）。";
+        resultEl.classList.add("visible");
+        pauseBtn.textContent = "暂停";
+      }
+
+      function resetGame() {
+        nodes = makeNodes();
+        packets = [];
+        pulses = [];
+        fronts = { 1: [], 2: [] };
+        prisoners = { 1: 0, 2: 0 };
+        selected = null;
+        running = true;
+        winner = null;
+        gameTime = 0;
+        emitClock = { 1: 0, 2: 0 };
+        aiClock = 0;
+        messageUntil = 0;
+        lastFrame = performance.now();
+        resultEl.classList.remove("visible");
+        pauseBtn.textContent = "暂停";
+        defaultStatus();
+        resizeCanvas();
+        updateScore();
+      }
+
+      function togglePause() {
+        if (winner) return;
+        running = !running;
+        pauseBtn.textContent = running ? "暂停" : "继续";
+        setStatus(running ? "兵流恢复。" : "对局已暂停，运输与争夺全部冻结。", 1200);
+      }
+
+      function updateScore() {
+        const territory = territoryFor(nodes);
+        cachedTerritory = territory;
+        playerScoreEl.textContent = territory[PLAYER] + prisoners[PLAYER];
+        enemyScoreEl.textContent = territory[ENEMY] + prisoners[ENEMY];
+        playerDetailEl.textContent = "地 " + territory[PLAYER] + " · 提 " + prisoners[PLAYER];
+        enemyDetailEl.textContent = "地 " + territory[ENEMY] + " · 提 " + prisoners[ENEMY];
+        const totalSeconds = Math.ceil(Math.max(0, MATCH_TIME - gameTime) / 1000);
+        timerEl.textContent = String(Math.floor(totalSeconds / 60)).padStart(2, "0") + ":" + String(totalSeconds % 60).padStart(2, "0");
+      }
+
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const padX = Math.max(52, rect.width * 0.1);
+        const padY = Math.max(48, rect.height * 0.13);
+        const stepX = (rect.width - padX * 2) / (SIZE - 1);
+        const stepY = (rect.height - padY * 2) / (SIZE - 1);
+        layoutCache = nodes.map((node) => ({
+          x: padX + node.col * stepX,
+          y: padY + node.row * stepY
+        }));
+      }
+
+      function drawRoundedRect(x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, width, height, radius);
+      }
+
+      function drawBoard(now) {
+        const rect = canvas.getBoundingClientRect();
+        ctx.clearRect(0, 0, rect.width, rect.height);
+
+        const wash = ctx.createRadialGradient(rect.width * 0.5, rect.height * 0.45, 10, rect.width * 0.5, rect.height * 0.45, rect.width * 0.66);
+        wash.addColorStop(0, "rgba(255,255,255,0.03)");
+        wash.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = wash;
+        ctx.fillRect(0, 0, rect.width, rect.height);
+
+        ctx.lineWidth = 1.25;
+        ctx.strokeStyle = "rgba(235,230,208,0.2)";
+        nodes.forEach((node) => {
+          getNeighbors(node.id).forEach((neighborId) => {
+            if (neighborId < node.id) return;
+            const a = layoutCache[node.id];
+            const b = layoutCache[neighborId];
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          });
+        });
+
+        [ENEMY, PLAYER].forEach((owner) => {
+          fronts[owner].forEach((targetId) => {
+            if (nodes[targetId].owner !== NEUTRAL) return;
+            const source = nearestSource(targetId, owner);
+            const a = source.sourceId === null
+              ? { x: owner === PLAYER ? 12 : rect.width - 12, y: layoutCache[targetId].y }
+              : layoutCache[source.sourceId];
+            const b = layoutCache[targetId];
+            ctx.save();
+            ctx.globalAlpha = 0.5;
+            ctx.strokeStyle = colors[owner];
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 7]);
+            ctx.lineDashOffset = -(now / 70) * (owner === PLAYER ? 1 : -1);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+            ctx.restore();
+          });
+        });
+
+        if (selected !== null && nodes[selected].owner !== NEUTRAL) {
+          const group = groupAt(nodes, selected);
+          group.members.forEach((id) => {
+            const p = layoutCache[id];
+            ctx.fillStyle = "rgba(255,255,255,0.07)";
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 27, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          group.liberties.forEach((id) => {
+            const p = layoutCache[id];
+            ctx.strokeStyle = "#f0bd55";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+            ctx.stroke();
+          });
+        }
+
+        packets.forEach((packet) => {
+          const progress = Math.min(1, (now - packet.startedAt) / packet.duration);
+          const ease = progress * progress * (3 - 2 * progress);
+          const a = packet.from === null
+            ? { x: packet.owner === PLAYER ? 12 : rect.width - 12, y: layoutCache[packet.to].y }
+            : layoutCache[packet.from];
+          const b = layoutCache[packet.to];
+          const x = a.x + (b.x - a.x) * ease;
+          const y = a.y + (b.y - a.y) * ease;
+          ctx.save();
+          ctx.shadowBlur = 11;
+          ctx.shadowColor = colors[packet.owner];
+          ctx.fillStyle = colors[packet.owner];
+          ctx.beginPath();
+          ctx.arc(x, y, 3.7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        nodes.forEach((node) => drawNode(node, now));
+        pulses = pulses.filter((pulse) => now - pulse.start < 700);
+        pulses.forEach((pulse) => {
+          const progress = (now - pulse.start) / 700;
+          const p = layoutCache[pulse.id];
+          ctx.save();
+          ctx.globalAlpha = 1 - progress;
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = pulse.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 20 + progress * 28, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+
+      function drawNode(node, now) {
+        const p = layoutCache[node.id];
+        const radius = Math.max(14, Math.min(19, canvas.getBoundingClientRect().width / 42));
+
+        if (node.owner === NEUTRAL) {
+          ctx.fillStyle = "rgba(235,230,208,0.4)";
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2);
+          ctx.fill();
+
+          const playerProgress = Math.min(1, node.pressure[PLAYER] / BUILD_THRESHOLD);
+          const enemyProgress = Math.min(1, node.pressure[ENEMY] / BUILD_THRESHOLD);
+          if (playerProgress > 0) {
+            ctx.strokeStyle = colors[PLAYER];
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * playerProgress);
+            ctx.stroke();
+          }
+          if (enemyProgress > 0) {
+            ctx.strokeStyle = colors[ENEMY];
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, radius + 5, Math.PI / 2, Math.PI / 2 + Math.PI * 2 * enemyProgress);
+            ctx.stroke();
+          }
+          if (node.koUntil > gameTime) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(240,189,85,0.7)";
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, radius + 8, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+          }
+          return;
+        }
+
+        const group = groupAt(nodes, node.id);
+        if (group.liberties.size === 1) {
+          const pulse = 0.5 + Math.sin(now / 150) * 0.5;
+          ctx.save();
+          ctx.globalAlpha = 0.55 + pulse * 0.35;
+          ctx.strokeStyle = "#f0bd55";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, radius + 7 + pulse * 2, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.save();
+        ctx.shadowBlur = 17;
+        ctx.shadowColor = colors[node.owner];
+        ctx.fillStyle = colors[node.owner];
+        ctx.strokeStyle = node.owner === PLAYER ? "#baf6e8" : "#ffc0ba";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.fillStyle = "#0c1110";
+        ctx.font = "800 10px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(group.liberties.size, p.x, p.y + 0.5);
+      }
+
+      function handlePointer(event) {
+        if (!running || winner) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        let hit = null;
+        let bestDistance = Infinity;
+        layoutCache.forEach((point, id) => {
+          const distance = Math.hypot(point.x - x, point.y - y);
+          if (distance < 28 && distance < bestDistance) {
+            bestDistance = distance;
+            hit = id;
+          }
+        });
+        if (hit === null) return;
+
+        if (nodes[hit].owner === NEUTRAL) {
+          selected = null;
+          toggleFront(hit);
+          return;
+        }
+
+        selected = hit;
+        const group = groupAt(nodes, hit);
+        const side = group.owner === PLAYER ? "青方" : "赤方";
+        setStatus(side + "这块棋有 " + group.members.length + " 子、" + group.liberties.size + " 口气。", 2500);
+      }
+
+      function frame(now) {
+        const dt = Math.min(80, now - lastFrame);
+        lastFrame = now;
+        if (running && !winner) {
+          gameTime += dt;
+          emitPackets(dt);
+          updatePackets();
+          decayPressure(dt);
+
+          aiClock += dt;
+          if (aiClock >= AI_INTERVAL) {
+            aiClock %= AI_INTERVAL;
+            runAI();
+          }
+          if (messageUntil && gameTime >= messageUntil) {
+            messageUntil = 0;
+            defaultStatus();
+          }
+          updateScore();
+          if (gameTime >= MATCH_TIME) finishGame();
+        }
+        drawBoard(gameTime);
+        requestAnimationFrame(frame);
+      }
+
+      canvas.addEventListener("pointerup", handlePointer);
+      pauseBtn.addEventListener("click", togglePause);
+      resetBtn.addEventListener("click", resetGame);
+      againBtn.addEventListener("click", resetGame);
+      window.addEventListener("resize", resizeCanvas);
+      window.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+          event.preventDefault();
+          togglePause();
+        }
+        if (event.key.toLowerCase() === "r") resetGame();
+      });
+
+      resetGame();
+      resizeCanvas();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
