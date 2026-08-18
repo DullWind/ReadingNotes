@@ -10,6 +10,7 @@ const stringLabels = ['G', 'C', 'E', 'A'];
 export function FingeringGuide({ event }: { event: ExerciseEvent }) {
   const pulse = useRef(new Animated.Value(0)).current;
   const chord = getChordShape(event.chordId);
+  const isChord = Boolean(chord);
 
   useEffect(() => {
     pulse.setValue(0);
@@ -29,7 +30,10 @@ export function FingeringGuide({ event }: { event: ExerciseEvent }) {
   return (
     <View style={styles.box}>
       <View style={styles.titleRow}>
-        <View><Text style={styles.kicker}>按弦动画</Text><Text style={styles.title}>{chord ? chord.name + ' 和弦' : event.cue}</Text></View>
+        <View>
+          <Text style={styles.kicker}>{isChord ? '和弦手型' : '拨弦引导'}</Text>
+          <Text style={styles.title}>{chord ? chord.name + ' 和弦' : event.cue}</Text>
+        </View>
         <Text style={styles.fingerLegend}>1食 · 2中 · 3无名 · 4小</Text>
       </View>
       <View style={styles.fretboard}>
@@ -44,14 +48,30 @@ export function FingeringGuide({ event }: { event: ExerciseEvent }) {
           const stringIndex = stringOrder.indexOf(item.string);
           const left = 17 + stringIndex * 60;
           const top = item.fret === 0 ? 10 : 44 + (item.fret - 1) * 38;
+          const isOpenString = item.fret === 0;
+          const shouldPulse = !isChord || !isOpenString;
           return (
-            <Animated.View key={item.string + '-' + item.fret} style={[styles.marker, { left, top }, animatedStyle]}>
-              <Text style={styles.markerText}>{item.fret === 0 ? '0' : item.finger || item.fret}</Text>
+            <Animated.View
+              key={item.string + '-' + item.fret}
+              style={[
+                styles.marker,
+                isOpenString && isChord && styles.openMarker,
+                { left, top },
+                shouldPulse && animatedStyle,
+              ]}
+            >
+              <Text style={[styles.markerText, isOpenString && isChord && styles.openMarkerText]}>
+                {isOpenString ? (isChord ? '0' : '拨') : item.finger || item.fret}
+              </Text>
             </Animated.View>
           );
         })}
       </View>
-      <Text style={styles.cue}>{chord ? chord.tip : event.cue + '。圆点显示要按或拨的位置。'}</Text>
+      <Text style={styles.cue}>
+        {chord
+          ? chord.tip + ' 绿色圆点是落指位置；白色 0 是空弦，不用按。'
+          : event.cue + '。闪动圆点所在的弦是这一步要拨的弦；0 表示不按品。'}
+      </Text>
     </View>
   );
 }
@@ -68,5 +88,7 @@ const styles = StyleSheet.create({
   stringName: { position: 'absolute', top: 204, width: 24, textAlign: 'center', color: colors.woodDark, fontWeight: '900' },
   marker: { position: 'absolute', width: 30, height: 30, borderRadius: 15, backgroundColor: colors.leaf, alignItems: 'center', justifyContent: 'center', zIndex: 2 },
   markerText: { color: colors.white, fontSize: 13, fontWeight: '900' },
+  openMarker: { backgroundColor: colors.surface, borderColor: colors.inkMuted, borderWidth: 2 },
+  openMarkerText: { color: colors.inkMuted },
   cue: { color: colors.inkMuted, fontSize: 13, lineHeight: 20, textAlign: 'center' },
 });
