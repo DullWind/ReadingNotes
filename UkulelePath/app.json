@@ -24,7 +24,8 @@
       [
         "expo-audio",
         {
-          "recordAudioAndroid": false
+          "microphonePermission": "允许木弦成风使用麦克风录制并分析你的练习",
+          "recordAudioAndroid": true
         }
       ],
       "expo-asset"

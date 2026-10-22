@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { FingeringGuide } from './src/components/FingeringGuide';
 import { Metronome } from './src/components/Metronome';
+import { PracticeRecorder } from './src/components/PracticeRecorder';
 import { TabScore } from './src/components/TabScore';
 import { foundationLessons, getFoundationExercise } from './src/data/foundations';
 import { song } from './src/data/song';
@@ -349,6 +350,14 @@ function FoundationPractice({ lesson, progress, setProgress }: {
             disabled={activeIndex === exercise.events.length - 1}
           ><Text style={styles.demoButtonText}>下一个</Text></Pressable>
         </View>
+      </Card>
+
+      <Card>
+        <PracticeRecorder
+          key={exercise.id}
+          durationBeats={exercise.events.map((item) => item.durationBeats)}
+          tempo={tempo}
+        />
       </Card>
 
       <Card>
