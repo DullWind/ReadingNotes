@@ -1,0 +1,33 @@
+{
+  "pages": 28,
+  "blocks": 6964,
+  "types": {
+    "page": 28,
+    "header": 2,
+    "text": 4672,
+    "midHeader": 219,
+    "bullList": 169,
+    "quote": 96,
+    "tinyHeader": 96,
+    "image": 774,
+    "subHeader": 284,
+    "blockEquation": 560,
+    "simpleTable": 4,
+    "code": 13,
+    "enumList": 47
+  },
+  "missing_children": [],
+  "image_blocks": 774,
+  "unique_images": 774,
+  "downloaded_images": 774,
+  "image_failures": {},
+  "html_files": 28,
+  "markdown_files": 28,
+  "cover_downloaded": true,
+  "offline_link_errors": [],
+  "unrendered_content_blocks": [],
+  "formula_count": 7110,
+  "formula_parse_errors": 0,
+  "download_date": "2026-11-03",
+  "source": "https://www.wolai.com/fkGSwxLu2pjWD7kiBY1V7W"
+}

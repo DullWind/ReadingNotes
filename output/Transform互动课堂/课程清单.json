@@ -1,0 +1,147 @@
+{
+  "title": "RTR4 第四章：从变换到投影",
+  "source": "G:/ReadingNotes/output/Real-Time Rendering 4th/Chapter 4 Transform 变换.md",
+  "sceneCount": 24,
+  "slides": 19,
+  "labs": 3,
+  "questions": 10,
+  "contents": [
+    {
+      "number": 1,
+      "title": "从一个顶点，到屏幕上的像素",
+      "type": "slide"
+    },
+    {
+      "number": 2,
+      "title": "先建立一张章节地图",
+      "type": "slide"
+    },
+    {
+      "number": 3,
+      "title": "齐次坐标：用 w 区分点与方向",
+      "type": "slide"
+    },
+    {
+      "number": 4,
+      "title": "四种基础操作，四种几何效果",
+      "type": "slide"
+    },
+    {
+      "number": 5,
+      "title": "TRS：最右边的矩阵先作用",
+      "type": "slide"
+    },
+    {
+      "number": 6,
+      "title": "实验一：交换变换顺序，会发生什么？",
+      "type": "interactive"
+    },
+    {
+      "number": 7,
+      "title": "绕指定点旋转：先搬到原点",
+      "type": "slide"
+    },
+    {
+      "number": 8,
+      "title": "法线的目标：始终垂直于切线",
+      "type": "slide"
+    },
+    {
+      "number": 9,
+      "title": "实验二：法线不能只做普通变换",
+      "type": "interactive"
+    },
+    {
+      "number": 10,
+      "title": "相机移动，为什么世界反向移动？",
+      "type": "slide"
+    },
+    {
+      "number": 11,
+      "title": "欧拉角：直观，但必须说清旋转约定",
+      "type": "slide"
+    },
+    {
+      "number": 12,
+      "title": "矩阵分解与任意轴旋转",
+      "type": "slide"
+    },
+    {
+      "number": 13,
+      "title": "四元数：把轴角压进四个数",
+      "type": "slide"
+    },
+    {
+      "number": 14,
+      "title": "SLERP：沿旋转空间的短路径前进",
+      "type": "slide"
+    },
+    {
+      "number": 15,
+      "title": "阶段测验：变换与旋转（4 题）",
+      "type": "quiz"
+    },
+    {
+      "number": 16,
+      "title": "顶点混合：从骨骼到皮肤",
+      "type": "slide"
+    },
+    {
+      "number": 17,
+      "title": "变形目标与几何缓存：另外两条动画路径",
+      "type": "slide"
+    },
+    {
+      "number": 18,
+      "title": "五个空间，别把矩阵放错位置",
+      "type": "slide"
+    },
+    {
+      "number": 19,
+      "title": "正交与透视：差别在除以距离",
+      "type": "slide"
+    },
+    {
+      "number": 20,
+      "title": "实验三：透视、正交与深度精度",
+      "type": "interactive"
+    },
+    {
+      "number": 21,
+      "title": "深度精度：近裁剪面为什么这么重要？",
+      "type": "slide"
+    },
+    {
+      "number": 22,
+      "title": "综合推演：让一个点完成整条旅程",
+      "type": "slide"
+    },
+    {
+      "number": 23,
+      "title": "结课测验：能否解释并排查错误？（6 题）",
+      "type": "quiz"
+    },
+    {
+      "number": 24,
+      "title": "带走五条规则，再回到原文推导",
+      "type": "slide"
+    }
+  ],
+  "limitations": [
+    "未生成语音音频",
+    "未配置实时AI问答模型"
+  ],
+  "classroomId": "1Ts3gxm6EmVTiVxqS6Jxv",
+  "url": "http://localhost:3000/classroom/1Ts3gxm6EmVTiVxqS6Jxv",
+  "validation": {
+    "schema": true,
+    "scripts": true,
+    "browserExperiments": [
+      "TRS (3,2) → RTS (0,5)",
+      "非均匀缩放错误法线点积 -0.6，正确 0；均匀缩放均为 0",
+      "距离 4 → 8，透视比例 0.5 → 0.25"
+    ],
+    "quiz": "结课六题自动评分与解析正常，试答已重置",
+    "offline": "脚本语法通过；内置浏览器不允许 file 协议，未在浏览器中单独打开离线文件"
+  }
+}
