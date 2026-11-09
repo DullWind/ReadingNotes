@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unity 相机仰视时的万向节死锁</title>
+  <style>
+    :root{color-scheme:dark;--bg:#101820;--panel:#1b2833;--edge:#30414e;--text:#f1f5f7;--muted:#aab8c3;--green:#7fe0b1;--cyan:#62d8e8;--orange:#ffb567;--purple:#b49aff;--red:#ff797e}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -28%,#293f4e 0,var(--bg) 62%);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{width:min(960px,calc(100% - 32px));margin:0 auto;padding:34px 0 32px}.eyebrow{font-size:12px;letter-spacing:.15em;font-weight:700;color:var(--cyan)}h1{font-size:clamp(29px,5vw,42px);line-height:1.14;letter-spacing:-.03em;margin:8px 0 9px}.intro{color:#c0cbd4;margin:0;max-width:760px}.card{background:linear-gradient(145deg,#1e2d39,#17232d);border:1px solid var(--edge);border-radius:17px;box-shadow:0 18px 48px #0003}.demo{margin-top:21px;padding:16px 17px}.demo-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.demo-head h2{font-size:15px;margin:0}.badge{font-size:12px;color:#e4edf2;background:#283945;border-radius:99px;padding:4px 10px;white-space:nowrap}.views{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.view-card{border:1px solid #344652;background:#15212b;border-radius:12px;padding:10px}.view-title{font-size:12px;color:#d7e1e8;margin:0 0 4px;font-weight:650}.view-sub{font-size:11px;color:var(--muted);margin:-2px 0 4px}.space-view{height:270px;width:100%;display:block}.viewfinder{position:relative;height:270px;border-radius:8px;overflow:hidden;background:#1a2630;border:1px solid #354653}.view-world{position:absolute;inset:-38%;transform-origin:50% 50%;transition:transform .12s linear;background:linear-gradient(180deg,#526f8d 0%,#334c67 48%,#a3a591 49%,#566252 100%)}.horizon{position:absolute;left:-10%;right:-10%;height:2px;background:#e7e6c8;top:48%;box-shadow:0 0 13px #f1e6bb88}.landmark{position:absolute;color:#fff2c9;font:700 12px system-ui,sans-serif;text-shadow:0 1px 4px #000b}.north{left:52%;top:31%}.west{left:18%;top:47%}.east{right:17%;top:47%}.sun{position:absolute;left:70%;top:24%;width:28px;height:28px;border-radius:50%;background:#ffd782;box-shadow:0 0 28px #ffd78277}.zenith{position:absolute;left:50%;top:48%;width:8px;height:8px;border-radius:50%;background:#fff7d5;box-shadow:0 0 9px #fff8;opacity:0;transition:opacity .2s}.star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff8de;opacity:0;transition:opacity .2s}.s1{left:25%;top:28%}.s2{left:72%;top:36%}.s3{left:40%;top:65%}.s4{left:80%;top:70%}.reticle{position:absolute;left:50%;top:50%;width:17px;height:17px;border:1px solid #ffffffa8;border-radius:50%;transform:translate(-50%,-50%);z-index:2}.reticle:before,.reticle:after{content:"";position:absolute;background:#ffffff9c}.reticle:before{width:1px;height:25px;left:7px;top:-5px}.reticle:after{height:1px;width:25px;top:7px;left:-5px}.view-label{position:absolute;z-index:3;top:8px;left:9px;background:#101820aa;padding:3px 7px;border-radius:5px;color:#edf3f6;font-size:10px}
+    .controls{max-width:650px;margin:14px auto 0}.control{margin-top:9px}.control-head{display:flex;justify-content:space-between;align-items:center}.control-head label{font-size:13px;font-weight:650}.control-head output{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}.slider{width:100%;accent-color:var(--cyan);cursor:pointer}.hints{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:-4px}.buttons{display:flex;gap:8px;justify-content:center;margin-top:12px}.button{border:1px solid #445967;background:#2a3b47;color:var(--text);border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}.button:hover{background:#374c5b}.button.primary{background:#2b4850;border-color:#42717b;color:#d4faff}.button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+    .explain{margin-top:13px;padding:15px 17px;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start}.icon{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#263e47;color:var(--cyan);font-weight:800}.explain strong{font-size:14px}.explain p{font-size:13px;color:#c2cdd5;margin:3px 0 0}.note{font-size:12px;color:#95a5b0;margin:12px 2px 0}
+    @media(max-width:700px){main{padding-top:25px}.demo{padding:13px 11px}.views{grid-template-columns:1fr}.view-card{padding:9px}.space-view,.viewfinder{height:235px}.demo-head{align-items:flex-start;flex-direction:column;gap:7px}.buttons{flex-wrap:wrap}}
+    @media(prefers-reduced-motion:reduce){.view-world{transition:none}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">UNITY 相机 · 俯仰与偏航</div>
+  <h1>看向正上方时，左右转会变成画面旋转</h1>
+  <p class="intro">试着把相机抬向天顶，再拖动偏航角。左边看相机在世界中的朝向；右边看相机取景。相机一直能转，变化的是“左右转”实际造成的效果。</p>
+
+  <section class="card demo">
+    <div class="demo-head"><h2>自由视角相机的三维示意</h2><span class="badge" id="badge">视线方向会改变</span></div>
+    <div class="views">
+      <div class="view-card"><p class="view-title">世界中的相机朝向</p><p class="view-sub">Unity 坐标配色：X 红、Y 绿、Z 蓝；白箭头是相机视线</p><canvas class="space-view" id="space" aria-label="标出 Unity 世界 X、Y、Z 轴的相机朝向三维示意"></canvas></div>
+      <div class="view-card"><p class="view-title">相机取景画面</p><p class="view-sub" id="viewDescription">水平线保持水平，左右转动会改变视线方向。</p>
+        <div class="viewfinder" id="viewfinder" aria-label="相机取景的模拟画面">
+          <div class="view-world" id="world"><div class="horizon" id="horizon"></div><span class="landmark north">N</span><span class="landmark west">W</span><span class="landmark east">E</span><i class="sun"></i><i class="zenith"></i><i class="star s1"></i><i class="star s2"></i><i class="star s3"></i><i class="star s4"></i></div>
+          <span class="view-label">CAMERA VIEW</span><span class="reticle"></span>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="control"><div class="control-head"><label for="pitch">抬头角度</label><output id="pitchOut">0°</output></div><input class="slider" id="pitch" type="range" min="0" max="90" value="0" aria-label="抬头角度"><div class="hints"><span>平视</span><span>正对天顶</span></div></div>
+      <div class="control"><div class="control-head"><label for="yaw">左右转动（偏航）</label><output id="yawOut">0°</output></div><input class="slider" id="yaw" type="range" min="-70" max="70" value="0" aria-label="左右转动偏航角"><div class="hints"><span>向左</span><span>向右</span></div></div>
+      <div class="buttons"><button class="button" id="reset">重置</button><button class="button primary" id="play">▶ 播放抬头</button><button class="button" id="lookUp">抬头到 90°</button></div>
+    </div>
+  </section>
+
+  <section class="card explain"><div class="icon">i</div><div><strong id="explainTitle">平视时：左右输入让视线转向。</strong><p id="explainText">偏航轴（绿）和相机视线（白）不平行，所以左右转会改变相机看向的方向。</p></div></section>
+  <p class="note">这是旋转顺序的示意动画，不是 Unity 实时运行画面。相机没有卡住；当视线对准世界竖直方向时，偏航轴与视线重合，左右转不再改变视线方向，而会让取景绕中心滚转。</p>
+</main>
+<script>
+(()=>{
+  const space=document.getElementById('space'),ctx=space.getContext('2d'),pitch=document.getElementById('pitch'),yaw=document.getElementById('yaw');
+  const pitchOut=document.getElementById('pitchOut'),yawOut=document.getElementById('yawOut'),badge=document.getElementById('badge');
+  const world=document.getElementById('world'),horizon=document.getElementById('horizon'),viewDescription=document.getElementById('viewDescription');
+  const title=document.getElementById('explainTitle'),copy=document.getElementById('explainText'),play=document.getElementById('play');
+  const zenith=document.querySelector('.zenith'),stars=[...document.querySelectorAll('.star')];
+  let w=0,h=0,dpr=1,frame=null;
+  const dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+  const add=(a,b)=>({x:a.x+b.x,y:a.y+b.y,z:a.z+b.z});
+  const mul=(a,s)=>({x:a.x*s,y:a.y*s,z:a.z*s});
+  function resize(){const r=space.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);w=r.width;h=r.height;space.width=Math.round(w*dpr);space.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw()}
+  function project(p){const az=-.65,el=.48,right={x:-Math.sin(az),y:Math.cos(az),z:0},up={x:-Math.cos(az)*Math.sin(el),y:-Math.sin(az)*Math.sin(el),z:Math.cos(el)},scale=Math.min(w/4.1,h/2.8);return{x:w*.5+dot(p,right)*scale,y:h*.53-dot(p,up)*scale,d:p.x*.5+p.y*.6+p.z*.4}}
+  function line(a,b,color,width=2,dash=[]){const p=project(a),q=project(b);ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.stroke();ctx.setLineDash([]);return q}
+  function arrow(a,b,color,label,offset={x:7,y:-7}){const q=line(a,b,color,3);const p=project(a),dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(q.x-ux*10-uy*4,q.y-uy*10+ux*4);ctx.lineTo(q.x-ux*10+uy*4,q.y-uy*10-ux*4);ctx.closePath();ctx.fillStyle=color;ctx.fill();ctx.font='700 12px system-ui,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='#101820';ctx.lineJoin='round';ctx.strokeText(label,q.x+offset.x,q.y+offset.y);ctx.fillStyle=color;ctx.fillText(label,q.x+offset.x,q.y+offset.y)}
+  function draw(){
+    if(!w||!h)return;ctx.clearRect(0,0,w,h);
+    const p=Number(pitch.value)*Math.PI/180,y=Number(yaw.value)*Math.PI/180;
+    // Ground grid and world axes (Unity convention: Y is up)
+    for(let i=-2;i<=2;i++){line({x:i*.45,y:0,z:-1.25},{x:i*.45,y:0,z:1.25},'#35475388',.8);line({x:-1.25,y:0,z:i*.45},{x:1.25,y:0,z:i*.45},'#35475388',.8)}
+    const worldOrigin={x:0,y:0,z:0};
+    line({x:-1.5,y:0,z:0},{x:1.5,y:0,z:0},'#e96b6b99',1.5);
+    line({x:0,y:0,z:-1.5},{x:0,y:0,z:1.5},'#5b9dff99',1.5);
+    arrow(worldOrigin,{x:1.5,y:0,z:0},'#f07474','+X');
+    arrow(worldOrigin,{x:0,y:1.48,z:0},'#7fe0b1','+Y');
+    arrow(worldOrigin,{x:0,y:0,z:1.5},'#6aa8ff','+Z',{x:-23,y:16});
+    // Camera basis for a look direction pitched upward, then yawed around world Y
+    const forward={x:Math.sin(y)*Math.cos(p),y:Math.sin(p),z:Math.cos(y)*Math.cos(p)};
+    const right={x:Math.cos(y),y:0,z:-Math.sin(y)};
+    const up={x:-Math.sin(y)*Math.sin(p),y:Math.cos(p),z:-Math.cos(y)*Math.sin(p)};
+    const origin={x:0,y:0,z:0},tip=add(origin,mul(forward,1.55));
+    arrow(origin,tip,'#f4f7fa','相机视线');
+    // Draw a simple camera body with its local right/up directions
+    const body=add(origin,mul(forward,-.28)),corners=[];
+    for(const sx of [-1,1])for(const sy of [-1,1])corners.push(add(add(body,mul(right,sx*.24)),mul(up,sy*.17)));
+    const joins=[[0,1],[0,2],[1,3],[2,3]];for(const [a,b] of joins)line(corners[a],corners[b],'#c4d1da',1.5);
+    for(let i=0;i<4;i++)line(corners[i],add(tip,mul(right,(i%2?1:-1)*.07)),'#c4d1da77',1);
+    // Roll/up direction is drawn on the camera itself; at zenith it spins around the view axis.
+    arrow(origin,add(origin,mul(up,.9)),'#b49aff','相机上方');
+    ctx.fillStyle='#c4d0d8';ctx.font='11px system-ui,sans-serif';ctx.fillText('世界地面（XZ 平面）',w*.59,h*.83);
+    updateView(p,y);
+  }
+  function updateView(p,y){
+    const pDeg=Number(pitch.value),yDeg=Number(yaw.value),near=pDeg>78,atTop=pDeg>=88;
+    pitchOut.value=`${pDeg}°`;yawOut.value=`${yDeg}°`;
+    const pan=-yDeg*1.35*Math.cos(p),roll=-yDeg*Math.sin(p);
+    world.style.transform=`translate(${pan}px,0) rotate(${roll}deg)`;
+    const horizonPosition=Math.max(8,Math.min(95,48+pDeg*.78));
+    world.style.background=`linear-gradient(180deg,#526f8d 0%,#334c67 ${horizonPosition-1}%,#b0b19a ${horizonPosition}%,#566252 100%)`;
+    horizon.style.top=`${horizonPosition}%`;horizon.style.opacity=near?'0':'1';
+    zenith.style.opacity=near?'1':'0';stars.forEach(s=>s.style.opacity=near?'0.9':'0');
+    if(atTop){badge.textContent='视线与偏航轴重合';title.textContent='仰到天顶：左右转让取景绕中心旋转。';copy.textContent='相机视线已经沿着世界向上轴。再转偏航，视线方向基本不变，相机的上方方向却绕视线转动，于是画面像在滚转。';viewDescription.textContent='视线朝天；转动偏航时，星点和方向标记绕中心转。'}
+    else if(pDeg>50){badge.textContent='视线正靠近偏航轴';title.textContent='接近天顶：左右转逐渐带动画面滚转。';copy.textContent='视线越接近世界向上轴，偏航越难改变“看向哪里”，越多地表现为绕视线转动。';viewDescription.textContent='视线接近天顶：画面开始明显旋转。'}
+    else{badge.textContent='视线方向会改变';title.textContent='平视时：左右输入让视线转向。';copy.textContent='偏航轴（绿）和相机视线（白）不平行，所以左右转会改变相机看向的方向。';viewDescription.textContent='水平线保持水平，左右转动会改变视线方向。'}
+  }
+  function stop(){if(frame!==null){cancelAnimationFrame(frame);frame=null}play.textContent='▶ 播放抬头'}
+  pitch.addEventListener('input',draw);yaw.addEventListener('input',draw);
+  document.getElementById('reset').addEventListener('click',()=>{stop();pitch.value=0;yaw.value=0;draw()});
+  document.getElementById('lookUp').addEventListener('click',()=>{stop();pitch.value=90;draw()});
+  play.addEventListener('click',()=>{if(frame!==null){stop();return}const start=performance.now();play.textContent='Ⅱ 暂停';const tick=now=>{const t=Math.min(1,(now-start)/3000);pitch.value=Math.round(90*(.5-.5*Math.cos(Math.PI*t)));draw();if(t<1)frame=requestAnimationFrame(tick);else{frame=null;play.textContent='▶ 再看一次'}};frame=requestAnimationFrame(tick)});
+  window.addEventListener('resize',resize);resize();
+})();
+</script>
+</body>
+</html>
