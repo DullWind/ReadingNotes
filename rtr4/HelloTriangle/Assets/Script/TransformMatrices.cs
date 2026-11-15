@@ -1,7 +1,14 @@
 using UnityEngine;
 public class TransformMatrices
 {
-   public static Matrix ModelTransform(Vector3 position, Vector3 rotation, Vector3 scale)
+
+    public static Matrix ViewTransform(Vector3 cameraPos, Vector3 cameraRotation)
+    {
+        Matrix translationMatrix = ModelTransform(cameraPos, cameraRotation, new Vector3(1, 1, -1));
+        var viewMatrix = translationMatrix.Inverse();
+        return viewMatrix;
+    }
+    public static Matrix ModelTransform(Vector3 position, Vector3 rotation, Vector3 scale)
     {
         Matrix res = new Matrix(4, 4);
         Matrix translationMatrix = CreateModelTranslationMatrix(position);
@@ -36,7 +43,7 @@ public class TransformMatrices
             { 0, 0, 0, 1 }
         });
 
-        return rotationZ * rotationY * rotationX;
+        return  rotationY * rotationX *rotationZ ;
     }
 
     private static Matrix CreateModelScalingMatrix(Vector3 scale)

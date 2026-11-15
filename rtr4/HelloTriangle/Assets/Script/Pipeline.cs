@@ -17,7 +17,6 @@ public class Pipeline : MonoBehaviour
     int[] indices = { 0, 1, 2 };   
 
 
-
     void Start()
     {
         List<Triangle> triangles = AssembleTriangleList(vertices, indices);

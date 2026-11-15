@@ -2,20 +2,28 @@ using UnityEngine;
 
 public class VertexProcessor
 {
+    private static Vector3 goPos, goRotation = new Vector3(0, 0, 0);
+    private static  Vector3 goScale = new Vector3(1, 1, 1);
+
+    private static  Vector3 cameraPos = new Vector3(3, 2, 1);
+    private static  Vector3 cameraRotation = new Vector3(0, 0, 0);
     public static Matrix ModelTransformMatrix()
     {
-        Vector3 position = new Vector3(0, 0, 0);
-        Vector3 rotation = new Vector3(0, 0, 0);
-        Vector3 scale = new Vector3(1, 1, 1);
+        return TransformMatrices.ModelTransform(goPos, goRotation, goScale);
+    }
 
-        return TransformMatrices.ModelTransform(position, rotation, scale);
+    public static Matrix ViewTransformMatrix()
+    {
+        return TransformMatrices.ViewTransform(cameraPos, cameraRotation);
     }
     public static Triangle ProcessTriangle(Triangle triangle)
     {
         var modelMatrix = ModelTransformMatrix();
-        triangle.a = (modelMatrix * new Matrix(triangle.a)).ToVector3();
-        triangle.b = (modelMatrix * new Matrix(triangle.b)).ToVector3();
-        triangle.c = (modelMatrix * new Matrix(triangle.c)).ToVector3();
+        var viewMatrix = ViewTransformMatrix();
+        var resMatrix = viewMatrix * modelMatrix;
+        triangle.a = (resMatrix * new Matrix(triangle.a)).ToVector3();
+        triangle.b = (resMatrix * new Matrix(triangle.b)).ToVector3();
+        triangle.c = (resMatrix * new Matrix(triangle.c)).ToVector3();
         return triangle;
     }
     

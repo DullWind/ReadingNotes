@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Matrix
@@ -32,6 +33,70 @@ public class Matrix
         return new Vector3((float)(data[0, 0] / w),
                            (float)(data[1, 0] / w),
                            (float)(data[2, 0] / w));
+    }
+
+    public Matrix Inverse()
+    {
+        if (Rows != Cols || Rows == 0)
+            Debug.LogError("Rows != Cols");
+
+        int size = Rows;
+        double[,] augmented = new double[size, size * 2];
+        for (int row = 0; row < size; row++)
+        {
+            for (int col = 0; col < size; col++)
+                augmented[row, col] = data[row, col];
+            augmented[row, size + row] = 1;
+        }
+
+        for (int col = 0; col < size; col++)
+        {
+            int pivotRow = col;
+            double pivotAbs = Math.Abs(augmented[col, col]);
+            for (int row = col + 1; row < size; row++)
+            {
+                double candidate = Math.Abs(augmented[row, col]);
+                if (candidate > pivotAbs)
+                {
+                    pivotAbs = candidate;
+                    pivotRow = row;
+                }
+            }
+
+            if (pivotAbs == 0 || double.IsNaN(pivotAbs))
+                Debug.LogError("The matrix has no inverse");
+
+            if (pivotRow != col)
+            {
+                for (int index = 0; index < size * 2; index++)
+                {
+                    double value = augmented[col, index];
+                    augmented[col, index] = augmented[pivotRow, index];
+                    augmented[pivotRow, index] = value;
+                }
+            }
+
+            double pivot = augmented[col, col];
+            for (int index = 0; index < size * 2; index++)
+                augmented[col, index] /= pivot;
+
+            for (int row = 0; row < size; row++)
+            {
+                if (row == col)
+                    continue;
+
+                double factor = augmented[row, col];
+                for (int index = 0; index < size * 2; index++)
+                    augmented[row, index] -= factor * augmented[col, index];
+            }
+        }
+
+        double[,] inverse = new double[size, size];
+        for (int row = 0; row < size; row++)
+            for (int col = 0; col < size; col++)
+                inverse[row, col] = augmented[row, size + col];
+
+        return new Matrix(inverse);
     }
 
     public static Matrix operator *(Matrix a, Matrix b)
