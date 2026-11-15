@@ -15,6 +15,11 @@ public class Matrix
         data = new double[rows, cols];
     }
 
+    public Matrix(double[,] values)
+    {
+        data = (double[,])values.Clone();
+    }
+
     public static Matrix operator *(Matrix a, Matrix b)
     {
         Matrix result = new Matrix(a.Rows, b.Cols);
@@ -53,52 +58,47 @@ public class TransformMatrices
         float radX = SimplyMath.DegreesToRadians(scale.x);
         float radY = SimplyMath.DegreesToRadians(scale.y);
         float radZ = SimplyMath.DegreesToRadians(scale.z);
-        Matrix rotationX = new Matrix(4, 4);
-        rotationX.data = new double[,] {
+        Matrix rotationX = new Matrix(new double[,] {
             { 1, 0, 0, 0 },
             { 0, Mathf.Cos(radX), -Mathf.Sin(radX), 0 },
             { 0, Mathf.Sin(radX), Mathf.Cos(radX), 0 },
             { 0, 0, 0, 1 }
-        };
-        Matrix rotationY = new Matrix(4, 4);
-        rotationY.data = new double[,] {
+        });
+        Matrix rotationY = new Matrix(new double[,] {
             { Mathf.Cos(radY), 0, Mathf.Sin(radY), 0 },
             { 0, 1, 0, 0 },
             { -Mathf.Sin(radY), 0, Mathf.Cos(radY), 0 },
             { 0, 0, 0, 1 }
-        };
-        Matrix rotationZ = new Matrix(4, 4);
-        rotationZ.data = new double[,] {
+        });
+        Matrix rotationZ = new Matrix(new double[,] {
             { Mathf.Cos(radZ), -Mathf.Sin(radZ), 0, 0 },
             { Mathf.Sin(radZ), Mathf.Cos(radZ), 0, 0 },
             { 0, 0, 1, 0 },
             { 0, 0, 0, 1 }
-        };
+        });
 
         return rotationZ * rotationY * rotationX;
     }
 
     private static Matrix CreateModelScalingMatrix(Vector3 scale)
     {
-        Matrix scalingMatrix = new Matrix(4, 4);
-        scalingMatrix.data = new double[,] {
+        Matrix scalingMatrix = new Matrix(new double[,] {
             { scale.x, 0, 0, 0 },
             { 0, scale.y, 0, 0 },
             { 0, 0, scale.z, 0 },
             { 0, 0, 0, 1 }
-        };
+        });
         return scalingMatrix;
     }
 
     private static Matrix CreateModelTranslationMatrix(Vector3 position)
     {
-        Matrix translationMatrix = new Matrix(4, 4);
-        translationMatrix.data = new double[,] {
+        Matrix translationMatrix = new Matrix(new double[,] {
             { 1, 0, 0, position.x },
             { 0, 1, 0, position.y },
             { 0, 0, 1, position.z },
             { 0, 0, 0, 1 }
-        };
+        });
         return translationMatrix;
     }
 
