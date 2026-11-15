@@ -4,25 +4,7 @@ using UnityEngine;
 
 public class PrimitiveAssembly
 {
-    public struct Vertex
-    {
-        public float posX, posY, posZ;
-
-        public Vertex(float posX, float posY, float posZ)
-        {
-            this.posX = posX;
-            this.posY = posY;
-            this.posZ = posZ;
-        }
-    }
-    
-
-    public struct Triangle
-    {
-        public Vertex a, b, c;
-    }
-
-    public static List<Triangle> AssembleTriangleList(Vertex[] vertices, int[] indices)
+    public static List<Triangle> AssembleTriangleList(Vector3[] vertices, int[] indices)
     {
         if (indices.Length % 3 != 0)
         {

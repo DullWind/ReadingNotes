@@ -1,48 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-public class Matrix
-{
-    private readonly double[,] data;
-
-    public int Rows => data.GetLength(0);
-    public int Cols => data.GetLength(1);
-
-
-
-    public Matrix(int rows, int cols)
-    {
-        data = new double[rows, cols];
-    }
-
-    public Matrix(double[,] values)
-    {
-        data = (double[,])values.Clone();
-    }
-
-    public static Matrix operator *(Matrix a, Matrix b)
-    {
-        Matrix result = new Matrix(a.Rows, b.Cols);
-        for (int i = 0; i < a.Rows; i++) 
-        {
-            for (int j = 0; j < b.Cols; j++)
-            {
-                double sum = 0;
-                for (int k = 0; k < a.Cols; k++)
-                {
-                    sum += a.data[i, k] * b.data[k, j];
-                }
-                result.data[i, j] = sum;
-            }
-        }
-        return result;
-    }
-
-}
-
 public class TransformMatrices
 {
-   public static Matrix ModelTransfor(Vector3 position, Vector3 rotation, Vector3 scale)
+   public static Matrix ModelTransform(Vector3 position, Vector3 rotation, Vector3 scale)
     {
         Matrix res = new Matrix(4, 4);
         Matrix translationMatrix = CreateModelTranslationMatrix(position);
