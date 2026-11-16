@@ -1,6 +1,19 @@
+using System;
 using UnityEngine;
 public class TransformMatrices
 {
+
+    public static Matrix PerspectiveProjection(float verticalFovDegrees, float aspect, float near, float far)
+    {
+        double focalLength = 1.0 / Math.Tan(SimplyMath.DegreesToRadians(verticalFovDegrees) / 2.0);
+        double depth = far - near;
+        return new Matrix(new double[,] {
+            { focalLength / aspect, 0, 0, 0 },
+            { 0, focalLength, 0, 0 },
+            { 0, 0, -(far + near) / depth, -2.0 * far * near / depth },
+            { 0, 0, -1, 0 }
+        });
+    }
 
     public static Matrix ViewTransform(Vector3 cameraPos, Vector3 cameraRotation)
     {

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>绕 Y 轴旋转：为什么 x = r sin φ？</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, "Microsoft YaHei", sans-serif; background: #0b1020; color: #edf3ff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 1160px; margin: auto; padding: 26px 20px 40px; }
+    h1 { margin: 0 0 10px; font-size: clamp(24px, 3vw, 36px); letter-spacing: .01em; }
+    p { line-height: 1.7; }
+    .intro { color: #b9c6df; margin: 0 0 20px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr); gap: 18px; }
+    .card { background: #131c30; border: 1px solid #30405d; border-radius: 16px; overflow: hidden; }
+    .scene { position: relative; min-height: 560px; touch-action: none; }
+    canvas { display: block; width: 100%; height: 560px; cursor: grab; }
+    canvas:active { cursor: grabbing; }
+    .hint { position: absolute; bottom: 14px; left: 16px; color: #c7d2e9; font-size: 13px; padding: 7px 10px; border-radius: 8px; background: #111a2dcc; pointer-events: none; }
+    .panel { padding: 22px; }
+    .panel h2 { font-size: 20px; margin: 0 0 16px; }
+    .eyebrow { color: #8fa1be; font-size: 13px; margin: 20px 0 5px; }
+    .formula { font-size: clamp(20px, 2.2vw, 27px); font-weight: 650; letter-spacing: .01em; line-height: 1.6; }
+    .red { color: #ff8383; } .blue { color: #7db7ff; } .gold { color: #ffd26a; } .green { color: #81dda7; }
+    .small { color: #c0cce1; font-size: 14px; line-height: 1.65; }
+    input[type="range"] { width: 100%; accent-color: #ffd26a; margin: 12px 0; }
+    .angleline { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .angleline strong { font-size: 25px; font-variant-numeric: tabular-nums; color: #ffd26a; }
+    .readout { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+    .metric { padding: 12px; background: #0c1527; border: 1px solid #273753; border-radius: 10px; font-variant-numeric: tabular-nums; }
+    .metric b { display: block; margin-top: 5px; font-size: 20px; }
+    .separator { border-top: 1px solid #31405c; margin: 22px 0; }
+    .callout { margin-top: 16px; border-left: 3px solid #ffd26a; padding: 8px 12px; background: #1d2537; line-height: 1.7; }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0 0; color: #c2cee4; font-size: 13px; }
+    .legend span::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 50%; background: var(--color); margin-right: 5px; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .scene { min-height: 400px; } canvas { height: 400px; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>为什么这里是 <span class="red">x = r sin φ</span>？</h1>
+  <p class="intro">两种公式都对，差别在于角度从哪根轴开始量。拖动左侧三维图改变视角，移动滑块改变点的位置。</p>
+  <div class="layout">
+    <section class="card scene" aria-label="可交互的三维坐标图">
+      <canvas id="scene" role="img" aria-label="三维坐标轴、XZ 平面、从正 Z 轴量到点 P 的角度及 X 和 Z 分量"></canvas>
+      <div class="hint">拖动：旋转视角 · 滑块：改变角度</div>
+    </section>
+    <section class="card panel">
+      <h2>从 <span class="blue">+Z</span> 轴开始量</h2>
+      <div class="angleline"><label for="angle">角度 φ</label><strong id="angleValue">40°</strong></div>
+      <input id="angle" type="range" min="-180" max="180" value="40" step="1" aria-label="角度 φ，从正 Z 轴向正 X 轴量">
+      <p class="small">黄色线是长度 <b>r = 2</b> 的向量 OP。φ = 0° 时，它正好指向 +Z；φ = 90° 时，它指向 +X。</p>
+      <div class="formula"><span class="red">x = r sin φ</span><br><span class="blue">z = r cos φ</span></div>
+      <div class="readout">
+        <div class="metric">X 分量 <b class="red" id="xValue">1.286</b></div>
+        <div class="metric">Z 分量 <b class="blue" id="zValue">1.532</b></div>
+      </div>
+      <div class="separator"></div>
+      <h2>从 <span class="red">+X</span> 轴开始量</h2>
+      <p class="small">如果把角度改为从 +X 轴量起的 β，那么 β = 90° − φ。此时就得到你熟悉的公式：</p>
+      <div class="formula"><span class="red">x = r cos β</span><br><span class="blue">z = r sin β</span></div>
+      <p class="small" id="betaValue">当前 β = 50°</p>
+      <div class="callout">同一个点、同一条向量；<b>角度的起始轴变了</b>，sin 和 cos 的位置就交换。</div>
+    </section>
+  </div>
+  <div class="legend" aria-hidden="true">
+    <span style="--color:#ff8383">X 轴 / x 分量</span>
+    <span style="--color:#81dda7">Y 轴</span>
+    <span style="--color:#7db7ff">Z 轴 / z 分量</span>
+    <span style="--color:#ffd26a">向量 OP 与角 φ</span>
+  </div>
+</main>
+<script>
+(() => {
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const slider = document.getElementById('angle');
+  const angleValue = document.getElementById('angleValue');
+  const betaValue = document.getElementById('betaValue');
+  const xValue = document.getElementById('xValue');
+  const zValue = document.getElementById('zValue');
+  let yaw = 0.69, pitch = 0.66;
+  let width = 0, height = 0, unit = 0;
+  const radius = 2;
+  const color = { x: '#ff8383', y: '#81dda7', z: '#7db7ff', point: '#ffd26a', grid: '#35435d' };
+  const O = [0,0,0];
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    width = rect.width; height = rect.height;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    unit = Math.min(width * 0.135, height * 0.155);
+    draw();
+  }
+  function project(p) {
+    const sy = Math.sin(yaw), cy = Math.cos(yaw);
+    const sp = Math.sin(pitch), cp = Math.cos(pitch);
+    const horizontal = p[0] * cy - p[2] * sy;
+    const vertical = -p[0] * sp * sy + p[1] * cp - p[2] * sp * cy;
+    return [width * 0.49 + horizontal * unit, height * 0.54 - vertical * unit];
+  }
+  function line(a,b,stroke,w=2,dash=[]) {
+    const A=project(a), B=project(b);
+    ctx.beginPath(); ctx.moveTo(...A); ctx.lineTo(...B);
+    ctx.strokeStyle=stroke; ctx.lineWidth=w; ctx.setLineDash(dash); ctx.stroke(); ctx.setLineDash([]);
+  }
+  function dot(p,fill,r=6) {
+    const P=project(p); ctx.beginPath(); ctx.arc(P[0],P[1],r,0,Math.PI*2); ctx.fillStyle=fill; ctx.fill();
+  }
+  function label(p,text,fill,dx=8,dy=-8) {
+    const P=project(p); ctx.font='600 15px system-ui, sans-serif';
+    ctx.lineWidth=4; ctx.strokeStyle='#10182a'; ctx.strokeText(text,P[0]+dx,P[1]+dy);
+    ctx.fillStyle=fill; ctx.fillText(text,P[0]+dx,P[1]+dy);
+  }
+  function arrow(a,b,stroke) {
+    line(a,b,stroke,2.8);
+    const A=project(a), B=project(b), angle=Math.atan2(B[1]-A[1],B[0]-A[0]);
+    ctx.beginPath(); ctx.moveTo(B[0],B[1]);
+    ctx.lineTo(B[0]-12*Math.cos(angle-.48),B[1]-12*Math.sin(angle-.48));
+    ctx.lineTo(B[0]-12*Math.cos(angle+.48),B[1]-12*Math.sin(angle+.48));
+    ctx.closePath(); ctx.fillStyle=stroke; ctx.fill();
+  }
+  function draw() {
+    ctx.clearRect(0,0,width,height);
+    const g=ctx.createRadialGradient(width*.5,height*.55,20,width*.5,height*.55,Math.max(width,height)*.7);
+    g.addColorStop(0,'#1a2942'); g.addColorStop(1,'#0e1729'); ctx.fillStyle=g; ctx.fillRect(0,0,width,height);
+
+    // XZ plane: both grid directions are shown so orbiting the camera retains depth cues.
+    for(let i=-3;i<=3;i++) {
+      line([i,0,-3],[i,0,3],color.grid,1);
+      line([-3,0,i],[3,0,i],color.grid,1);
+    }
+    arrow(O,[3.25,0,0],color.x); label([3.3,0,0],'+X',color.x);
+    arrow(O,[0,3.1,0],color.y); label([0,3.15,0],'+Y',color.y);
+    arrow(O,[0,0,3.25],color.z); label([0,0,3.3],'+Z',color.z);
+    dot(O,'#edf3ff',4); label(O,'O','#edf3ff',-20,18);
+
+    const deg=Number(slider.value), phi=deg*Math.PI/180;
+    const x=radius*Math.sin(phi), z=radius*Math.cos(phi);
+    const P=[x,0,z], X=[x,0,0], Z=[0,0,z];
+    // Two dotted projection legs make the coordinates explicit.
+    line(X,P,color.z,2,[5,5]); line(Z,P,color.x,2,[5,5]);
+    line(O,X,color.x,4); line(O,Z,color.z,4);
+    line(O,P,color.point,4);
+    dot(P,color.point,7); dot(X,color.x,4); dot(Z,color.z,4);
+    label(P,'P (x, 0, z)',color.point,10,-11);
+    label(X,'x',color.x,8,15); label(Z,'z',color.z,8,15);
+    // Arc begins at +Z and ends at P.
+    const arcR=.65, segments=Math.max(2,Math.ceil(Math.abs(phi)*24));
+    ctx.beginPath();
+    for(let i=0;i<=segments;i++) {
+      const t=phi*i/segments, q=project([arcR*Math.sin(t),.025,arcR*Math.cos(t)]);
+      if(i===0) ctx.moveTo(...q); else ctx.lineTo(...q);
+    }
+    ctx.strokeStyle=color.point; ctx.lineWidth=3; ctx.stroke();
+    const mid=phi*.5; label([.85*Math.sin(mid),.03,.85*Math.cos(mid)],'φ',color.point,1,-3);
+
+    angleValue.textContent=`${deg}°`;
+    betaValue.textContent=`当前 β = ${90-deg}°；x = 2 cos(${90-deg}°)`;
+    xValue.textContent=x.toFixed(3);
+    zValue.textContent=z.toFixed(3);
+  }
+  slider.addEventListener('input',draw);
+  let drag=null;
+  canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,yaw,pitch}; canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointermove',e=>{
+    if(!drag) return;
+    yaw=drag.yaw+(e.clientX-drag.x)*.008;
+    pitch=Math.max(.12,Math.min(1.4,drag.pitch-(e.clientY-drag.y)*.008));
+    draw();
+  });
+  canvas.addEventListener('pointerup',()=>drag=null);
+  canvas.addEventListener('pointercancel',()=>drag=null);
+  window.addEventListener('resize',resize);
+  resize();
+})();
+</script>
+</body>
+</html>

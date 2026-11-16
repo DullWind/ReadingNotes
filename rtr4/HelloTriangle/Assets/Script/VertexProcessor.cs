@@ -16,11 +16,17 @@ public class VertexProcessor
     {
         return TransformMatrices.ViewTransform(cameraPos, cameraRotation);
     }
+
+    public static Matrix ProjectionTransformMatrix()
+    {
+        return TransformMatrices.PerspectiveProjection(90, 1, 0.1f, 100);
+    }
     public static Triangle ProcessTriangle(Triangle triangle)
     {
         var modelMatrix = ModelTransformMatrix();
         var viewMatrix = ViewTransformMatrix();
-        var resMatrix = viewMatrix * modelMatrix;
+        var projectionMatrix = ProjectionTransformMatrix();
+        var resMatrix = projectionMatrix * viewMatrix * modelMatrix;
         triangle.a = (resMatrix * new Matrix(triangle.a)).ToVector3();
         triangle.b = (resMatrix * new Matrix(triangle.b)).ToVector3();
         triangle.c = (resMatrix * new Matrix(triangle.c)).ToVector3();
