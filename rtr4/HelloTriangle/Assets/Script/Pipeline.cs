@@ -14,22 +14,19 @@ public class Pipeline : MonoBehaviour
         new Vector3(-1,  1, 0), // v2
     };
 
-    int[] indices = { 0, 1, 2 };   
+    int[] indices = { 0, 1, 2 };
 
 
     void Start()
     {
         List<Triangle> triangles = AssembleTriangleList(vertices, indices);
-        for (int i = 0; i < triangles.Count; i++)
-        {
-            triangles[i] = VertexProcessor.ProcessTriangle(triangles[i]);
-        }
+
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }

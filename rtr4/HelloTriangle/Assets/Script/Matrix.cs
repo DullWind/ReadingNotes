@@ -18,6 +18,12 @@ public class Matrix
         data = (double[,])values.Clone();
     }
 
+    public double this[int row, int col]
+    {
+        get => data[row, col];
+        set => data[row, col] = value;
+    }
+
     public Matrix(Vector3 vector)
     {
         data = new double[4, 1];
@@ -112,6 +118,22 @@ public class Matrix
                     sum += a.data[i, k] * b.data[k, j];
                 }
                 result.data[i, j] = sum;
+            }
+        }
+        return result;
+    }
+
+    public static Matrix operator -(Matrix a, Matrix b)
+    {
+        if (a.Rows != b.Rows || a.Cols != b.Cols)
+            throw new InvalidOperationException("Matrices must have the same dimensions for subtraction.");
+
+        Matrix result = new Matrix(a.Rows, a.Cols);
+        for (int i = 0; i < a.Rows; i++)
+        {
+            for (int j = 0; j < a.Cols; j++)
+            {
+                result.data[i, j] = a.data[i, j] - b.data[i, j];
             }
         }
         return result;

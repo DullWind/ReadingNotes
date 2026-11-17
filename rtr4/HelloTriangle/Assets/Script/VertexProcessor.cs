@@ -1,5 +1,6 @@
 using UnityEngine;
-
+using System;
+using System.Collections.Generic;
 public class VertexProcessor
 {
     private static Vector3 goPos, goRotation = new Vector3(0, 0, 0);
@@ -7,6 +8,15 @@ public class VertexProcessor
 
     private static  Vector3 cameraPos = new Vector3(3, 2, 1);
     private static  Vector3 cameraRotation = new Vector3(0, 0, 0);
+
+    private static float verticalFovDegrees = 90;
+
+    private static float aspect = 1;
+
+    private static float near = 0.1f;
+
+    private static float far = 100;
+
     public static Matrix ModelTransformMatrix()
     {
         return TransformMatrices.ModelTransform(goPos, goRotation, goScale);
@@ -19,18 +29,100 @@ public class VertexProcessor
 
     public static Matrix ProjectionTransformMatrix()
     {
-        return TransformMatrices.PerspectiveProjection(90, 1, 0.1f, 100);
+        return TransformMatrices.PerspectiveProjection(verticalFovDegrees, aspect, near, far);
     }
-    public static Triangle ProcessTriangle(Triangle triangle)
+
+    private static Matrix Interpolate(Matrix a, Matrix b, double t)
+    {
+        var values = new double[4, 1];
+        for (int row = 0; row < 4; row++)
+            values[row, 0] = a[row, 0] + t * (b[row, 0] - a[row, 0]);
+
+        return new Matrix(values);
+    }
+
+    private static readonly Func<Matrix, double>[] ClipPlanes =
+    {
+        p => p[3, 0] + p[0, 0], // 左
+        p => p[3, 0] - p[0, 0], // 右
+        p => p[3, 0] + p[1, 0], // 下
+        p => p[3, 0] - p[1, 0], // 上
+        p => p[3, 0] + p[2, 0], // 近
+        p => p[3, 0] - p[2, 0], // 远
+    };
+
+    public static List<Triangle> ClipTransform(Matrix a, Matrix b, Matrix c)
+    {
+
+        var polygon = new List<Matrix> { a, b, c };
+        for (int i = 0; i < ClipPlanes.Length; i++)
+        {
+            polygon = ClipAgainstPlane(polygon, ClipPlanes[i]);
+            if (polygon.Count == 0)
+            {
+                return new List<Triangle>();
+            }
+        }
+        var result = new List<Triangle>();
+        for (int i = 1; i < polygon.Count - 1; i++)
+        {
+            // 这里理论上还要保留w，在光栅化的时候用来插值像素的属性
+            result.Add(new Triangle
+            {
+                a = polygon[0].ToVector3(),
+                b = polygon[i].ToVector3(),
+                c = polygon[i + 1].ToVector3()
+            });
+        }
+        return result;
+    }
+
+    private static List<Matrix> ClipAgainstPlane(List<Matrix> polygon, Func<Matrix, double> distance)
+    {
+        var result = new List<Matrix>();
+        if (polygon.Count == 0)
+            return result;
+
+        Matrix previous = polygon[polygon.Count - 1];
+        double previousDistance = distance(previous);
+
+        foreach (Matrix current in polygon)
+        {
+            double currentDistance = distance(current);
+            bool previousInside = previousDistance >= 0;
+            bool currentInside = currentDistance >= 0;
+
+            if (previousInside != currentInside &&
+                previousDistance != 0 && currentDistance != 0)
+            {
+                double t = previousDistance /
+                        (previousDistance - currentDistance);
+                result.Add(Interpolate(previous, current, t));
+            }
+
+            if (currentInside)
+                result.Add(current);
+
+            previous = current;
+            previousDistance = currentDistance;
+        }
+
+        return result;
+    }
+
+
+    public static List<Triangle> ProcessTriangle(Triangle triangle)
     {
         var modelMatrix = ModelTransformMatrix();
         var viewMatrix = ViewTransformMatrix();
         var projectionMatrix = ProjectionTransformMatrix();
         var resMatrix = projectionMatrix * viewMatrix * modelMatrix;
-        triangle.a = (resMatrix * new Matrix(triangle.a)).ToVector3();
-        triangle.b = (resMatrix * new Matrix(triangle.b)).ToVector3();
-        triangle.c = (resMatrix * new Matrix(triangle.c)).ToVector3();
-        return triangle;
+        var aPoint = (resMatrix * new Matrix(triangle.a));
+        var bPoint = (resMatrix * new Matrix(triangle.b));
+        var cPoint = (resMatrix * new Matrix(triangle.c));
+        var clipTriangle = ClipTransform(aPoint, bPoint, cPoint);
+
+        return clipTriangle;
     }
-    
+
 }
