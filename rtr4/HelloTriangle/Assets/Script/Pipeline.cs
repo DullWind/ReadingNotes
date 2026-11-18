@@ -20,8 +20,12 @@ public class Pipeline : MonoBehaviour
     void Start()
     {
         List<Triangle> triangles = AssembleTriangleList(vertices, indices);
-
-
+        List<Triangle> pologyProcess = new List<Triangle>();
+        for (int i = 0; i < triangles.Count; i++)
+        {
+            var processed = VertexProcessor.ProcessTriangle(triangles[i]);
+            pologyProcess.AddRange(processed);
+        }
     }
 
     // Update is called once per frame

@@ -17,6 +17,9 @@ public class VertexProcessor
 
     private static float far = 100;
 
+    private static float width = 800;
+
+    private static float height = 600;
     public static Matrix ModelTransformMatrix()
     {
         return TransformMatrices.ModelTransform(goPos, goRotation, goScale);
@@ -110,6 +113,20 @@ public class VertexProcessor
         return result;
     }
 
+    public static List<Triangle> ScreenTransform(List<Triangle> triangle, float width, float height)
+    {
+        var result = new List<Triangle>();
+        for (int i = 0; i < triangle.Count; i++)
+        {
+            var curTriangle = triangle[i];
+            curTriangle.a = new Vector3((curTriangle.a.x + 1) * width / 2, (curTriangle.a.y + 1) * height / 2, curTriangle.a.z);
+            curTriangle.b = new Vector3((curTriangle.b.x + 1) * width / 2, (curTriangle.b.y + 1) * height / 2, curTriangle.b.z);
+            curTriangle.c = new Vector3((curTriangle.c.x + 1) * width / 2, (curTriangle.c.y + 1) * height / 2, curTriangle.c.z);
+            result.Add(curTriangle);
+        }
+        return result;
+    }
+
 
     public static List<Triangle> ProcessTriangle(Triangle triangle)
     {
@@ -121,8 +138,8 @@ public class VertexProcessor
         var bPoint = (resMatrix * new Matrix(triangle.b));
         var cPoint = (resMatrix * new Matrix(triangle.c));
         var clipTriangle = ClipTransform(aPoint, bPoint, cPoint);
-
-        return clipTriangle;
+        var resTriange = ScreenTransform(clipTriangle, width, height);
+        return resTriange;
     }
 
 }
