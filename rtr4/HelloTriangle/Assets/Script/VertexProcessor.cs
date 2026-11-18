@@ -6,7 +6,7 @@ public class VertexProcessor
     private static Vector3 goPos, goRotation = new Vector3(0, 0, 0);
     private static  Vector3 goScale = new Vector3(1, 1, 1);
 
-    private static  Vector3 cameraPos = new Vector3(3, 2, 1);
+    private static  Vector3 cameraPos = new Vector3(0, 0, -3);
     private static  Vector3 cameraRotation = new Vector3(0, 0, 0);
 
     private static float verticalFovDegrees = 90;
